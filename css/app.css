@@ -1,0 +1,155 @@
+body table {                                                                                                                                                              
+	font-size: 100%;                                                                                                                                                      
+}                                                                                                                                                                         
+table.dataTable thead th {                                                                                                                                                
+	padding: 0;                                                                                                                                                           
+}                                                                                                                                                                         
+div.filter-container {                                                                                                                                                    
+	border-bottom:1px solid black;                                                                                                                                        
+	overflow: hidden;                                                                                                                                                     
+	width: 100%;                                                                                                                                                          
+	background-color: #2fbeb5;                                                                                                                                            
+	text-align: center;                                                                                                                                                   
+}                                                                                                                                                                         
+div.filter-box {                                                                                                                                                          
+	border:1px solid black;                                                                                                                                               
+	padding: 10px;                                                                                                                                                        
+}                                                                                                                                                                         
+div.options-box {                                                                                                                                                         
+	float: right;                                                                                                                                                         
+	padding: 3px;                                                                                                                                                         
+}                                                                                                                                                                         
+td.link {                                                                                                                                                                 
+	cursor: pointer;                                                                                                                                                      
+}                                                                                                                                                                         
+td.link:hover {                                                                                                                                                           
+	background: #00aafe;                                                                                                                                                  
+}                                                                                                                                                                         
+td.high {                                                                                                                                                                 
+	color: #f42555;                                                                                                                                                       
+	font-weight: bold;                                                                                                                                                    
+	text-decoration: underline;                                                                                                                                           
+}                         
+.yadcf-filter {
+	width: 50px;
+	padding: 0px;
+}
+.yadcf-filter[multiple] {
+	height: 100;
+	width:  100 !important;
+}
+div.div-bg {
+	background: #2FBEB7;
+	border: 2px;
+	border-style: groove;
+	padding: 0px;
+}
+div.col-md-12 {
+	padding: 0px;
+}
+div.processing {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: #d9edf7;
+	opacity: 0.8;
+	z-index: 10098;
+}
+
+div.processing.info {                                                                                                                                                     
+	border-radius: 24px;                                                                                                                                                  
+	border: 1px solid green;                                                                                                                                              
+	position: fixed;                                                                                                                                                      
+	margin: 1%;                                                                                                                                                           
+	left: 0;                                                                                                                                                              
+	background-color: #fff;                                                                                                                                               
+	opacity: 1;                                                                                                                                                           
+	z-index: 10099;                                                                                                                                                       
+	padding: 15px;                                                                                                                                                        
+	display: block;                                                                                                                                                       
+	width: 98%;
+	height: 93px;
+	text-align: center;
+}
+h3.processing {
+	margin-top: 0px;
+}
+div.info-box {
+	width: 100%;
+	padding: 6px;
+}
+tr.today td, span.today {
+	background: #bcd48d;
+	color: black;
+}
+tr.tomorrow td, span.tomorrow {
+	background: #fec84d;
+	color: black;
+}
+tr.future td, span.future {
+	background: #e0fdff;
+	color: black;
+}
+button {
+	padding-bottom: 0px;
+	border: 0px;
+}
+input[type=checkbox], input[type=radio] {
+	margin-top: 0px;
+}
+input.search-date {
+	border: 0px;
+	padding: 0px;
+	width: 86px;
+	padding-left: 2px;
+}
+.warning {
+	background-color: #ffe24b !important;
+}
+.danger {
+	background-color: #ffa0a0 !important;
+}
+/* position: relative from bootstrap makes the input unclickable for mobile devices */
+.col-md-3, .col-md-2 {
+	position: unset;
+}
+.liquidFillGaugeText {
+	font-family: Helvetica;
+	font-weight: bold;
+}
+.center {
+	text-align: center;
+	justify-content: center;
+	align-items: center;
+	padding-top: 10px;
+	margin-bottom: 25px;
+}
+.bottom-space {
+	margin-bottom: 10px;
+}
+input.date_search {
+	width: 150px;
+	display: inline;
+}
+.filter-container .form-group {                                                                                                                                           
+	margin-bottom: 0px;
+}
+.filter-container input[type=checkbox] {
+	margin-top: 11px;
+	margin-bottom: 11px;
+	margin-left: 6px;
+}
+.header {
+	border-bottom:1px solid black;
+	margin: 0px;
+	width: 100%;
+	background-color: #2fbeb5;
+}
+.header h4 {
+	margin-top: 10px;
+}
+.tooltip {
+	white-space: pre-line;
+}
