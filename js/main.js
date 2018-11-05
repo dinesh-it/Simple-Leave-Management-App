@@ -38,15 +38,15 @@ var help = "group_name_case_sensitive, group_first_name, login_name, refresh_dat
 $(document).ready(function() {
 
 	CompanyHolidays = _.keys(HolidayList);
-	moment.locale('en-GB', {                                                                                                                                              
-		holidays: CompanyHolidays,                                                                                                                                      
-		holidayFormat: 'YYYY-MM-DD',                                                                                                                                      
-		workingWeekdays: [1,2,3,4,5]                                                                                                                                      
+	moment.locale('en-GB', {
+		holidays: CompanyHolidays,
+		holidayFormat: 'YYYY-MM-DD',
+		workingWeekdays: [1,2,3,4,5]
 	});
 
 	$(".filter-box").hide();
-	$(window).on("focus", function(event) 
-	{ 
+	$(window).on("focus", function(event)
+	{
 		validate_session();
 		return false;
 	});
@@ -55,6 +55,8 @@ $(document).ready(function() {
 		temp_types.push(v);
 		temp_types.push('H' + v);
 	});
+
+	$('.company_name').text(company_name);
 
 	authorizeButton = document.getElementById("authorize-button");
 	signoutButton = document.getElementById("signout-button");
@@ -65,41 +67,41 @@ $(document).ready(function() {
 	initialize();
 
 	bind_events();
-}); 
+});
 
 function init_holiday_list() {
-	var leave_list_table = $('#holidays_list tbody');                                                                                                                     
-	var today = moment();                                                                                                                                                 
-	for( key in HolidayList) {                                                                                                                                            
-		var date = moment(key);                                                                                                                                           
-		d = date.format('DD-MM-YYYY - dddd');                                                                                                                             
-		var day = date.format('ddd');                                                                                                                                     
-		var style;                                                                                                                                                        
-		if(day == 'Sun' || day == 'Sat'){                                                                                                                                 
-			style = 'danger';                                                                                                                                             
-		}                                                                                                                                                                 
-		else if(day == 'Fri' || day == 'Mon'){                                                                                                                            
-			style = 'success'                                                                                                                                             
-		}                                                                                                                                                                 
-		else {                                                                                                                                                            
-			style = 'info';                                                                                                                                               
-		}                                                                                                                                                                 
-		if(date < today) {                                                                                                                                                
-			style = 'warning past hide';                                                                                                                                  
-		}                                                                                                                                                                 
-		var newline = '<tr class="' + style + '"><td>' + d + "</td><td>" + HolidayList[key] + "</td></tr>";                                                               
-		leave_list_table.append(newline);                                                                                                                                 
-	}                
+	var leave_list_table = $('#holidays_list tbody');
+	var today = moment();
+	for( key in HolidayList) {
+		var date = moment(key);
+		d = date.format('DD-MM-YYYY - dddd');
+		var day = date.format('ddd');
+		var style;
+		if(day == 'Sun' || day == 'Sat'){
+			style = 'danger';
+		}
+		else if(day == 'Fri' || day == 'Mon'){
+			style = 'success'
+		}
+		else {
+			style = 'info';
+		}
+		if(date < today) {
+			style = 'warning past hide';
+		}
+		var newline = '<tr class="' + style + '"><td>' + d + "</td><td>" + HolidayList[key] + "</td></tr>";
+		leave_list_table.append(newline);
+	}
 
-	$('#holiday-show-past').click(function() {                                                                                                                            
-		if($(this).hasClass('sp')){                                                                                                                                       
-			$(this).removeClass('sp').text('Hide Past Dates');                                                                                                            
-			leave_list_table.find('.past').removeClass('hide');                                                                                                           
-		}                                                                                                                                                                 
-		else {                                                                                                                                                            
-			$(this).addClass('sp').text('Show Past Dates');                                                                                                               
-			leave_list_table.find('.past').addClass('hide');                                                                                                              
-		}                                                                                                                                                                 
+	$('#holiday-show-past').click(function() {
+		if($(this).hasClass('sp')){
+			$(this).removeClass('sp').text('Hide Past Dates');
+			leave_list_table.find('.past').removeClass('hide');
+		}
+		else {
+			$(this).addClass('sp').text('Show Past Dates');
+			leave_list_table.find('.past').addClass('hide');
+		}
 	});
 }
 
@@ -134,36 +136,36 @@ function initialize() {
 }
 
 function bind_events() {
-	$(document).on('click','td.link', function(){                                                                                                                             
-		var cell = $(this);                                                                                                                                                   
-		progress_bar("Applying filter...");                                                                                                                                   
-		var name = $('td:first', cell.parents('tr')).text();                                                                                                                  
-		var th = $('#all-events-report th').eq(cell.index()).text();                                                                                                          
-		var type = th;//th.split(' in ')[0];                                                                                                                                  
-		console.log("Name: " + name + "Type: " + type);                                                                                                                       
-		var name_search = $('#yadcf-filter--all-events-1');                                                                                                                   
-		var type_search = $('#yadcf-filter--all-events-0');                                                                                                                   
-		window.scrollTo(0,30);                                                                                                                                                
-		name_search.find('option[value="'+ name +'"]').prop('selected', true).trigger('change');                                                                              
-		type_search.find('option[value="'+ type +'"]').prop('selected', true).trigger('change');                                                                              
-		progress_bar('',true);                                                                                                                                                
-		$('#filter-reset').removeClass('hide');                                                                                                                               
-		document.body.scrollTop = document.documentElement.scrollTop = 0;                                                                                                     
-	});          
+	$(document).on('click','td.link', function(){
+		var cell = $(this);
+		progress_bar("Applying filter...");
+		var name = $('td:first', cell.parents('tr')).text();
+		var th = $('#all-events-report th').eq(cell.index()).text();
+		var type = th;//th.split(' in ')[0];
+		console.log("Name: " + name + "Type: " + type);
+		var name_search = $('#yadcf-filter--all-events-1');
+		var type_search = $('#yadcf-filter--all-events-0');
+		window.scrollTo(0,30);
+		name_search.find('option[value="'+ name +'"]').prop('selected', true).trigger('change');
+		type_search.find('option[value="'+ type +'"]').prop('selected', true).trigger('change');
+		progress_bar('',true);
+		$('#filter-reset').removeClass('hide');
+		document.body.scrollTop = document.documentElement.scrollTop = 0;
+	});
 
-	$('input[name="add_event_day"]').on('change', function() {                                                                                                            
-		var day_type = $('input[name="add_event_day"]:checked').val();                                                                                                    
-		if(day_type == 'FULL'){                                                                                                                                           
-			$('#add-event-from-label').html('From');                                                                                                                      
-			$('#add-event-to').show();                                                                                                                                    
-			$('#add-event-days-div').show();                                                                                                                              
-		}                                                                                                                                                                 
-		else if (day_type == 'FH' || day_type == 'SH') {                                                                                                                  
-			$('#add-event-from-label').html('On');                                                                                                                        
-			$('#add-event-to').hide();                                                                                                                                    
-			$('#add-event-days-div').hide();                                                                                                                              
-		}                                                                                                                                                                 
-	});    	
+	$('input[name="add_event_day"]').on('change', function() {
+		var day_type = $('input[name="add_event_day"]:checked').val();
+		if(day_type == 'FULL'){
+			$('#add-event-from-label').html('From');
+			$('#add-event-to').show();
+			$('#add-event-days-div').show();
+		}
+		else if (day_type == 'FH' || day_type == 'SH') {
+			$('#add-event-from-label').html('On');
+			$('#add-event-to').hide();
+			$('#add-event-days-div').hide();
+		}
+	});
 
 	$('#filter-reset').on('click', function() {
 		// TODO: Trying to reset
@@ -220,7 +222,7 @@ function bind_events() {
 		],
 		"rowCallback": function(row, col, i){
 			// Check if this event occurs today, tomorrow or in future.
-			if(col[2] >= this_month) { 
+			if(col[2] >= this_month) {
 				if(col[2] == today_date || (col[2] < (this_month + '-31') && col[4].match(today_tmrw[0]))){
 					$(row).addClass('today');
 					set_today_event(col);
@@ -469,25 +471,25 @@ function bind_events() {
 
 }
 
-// Just for Fun -- :-)                                                                                                                                                    
-function print_fun_info() {                                                                                                                                               
-	var start_date = moment().startOf('year');                                                                                                                            
-	var end_date = moment().endOf('year');                                                                                                                                
-	var today = moment();                                                                                                                                                 
-	var total_wdays = start_date.businessDiff(end_date, 'days');                                                                                                          
-	var total_days = end_date.diff(start_date, 'days');                                                                                                                   
-	console.log("\nNot sure why you came to look for console!"                                                                                                            
-		, "\nBut here are some extra details I can give for you \n"                                                                                                           
-		, "\nLet's say all weekends are considered as holidays"                                                                                                               
-		, "\nAnd we have ", CompanyHolidays.length, " gvt. holidays "                                                                                                       
-		, HolidayList                                                                                                                                                         
-		, "\n \nSo, In this year we have: ", total_days,  " total days"                                                                                                       
-		, "\nand in that, we have only ", total_wdays, ' working days'                                                                                                        
-		, "\nand we also have 18PL + 12SL (30 leaves)"                                                                                                                        
-		, "\n \nWhich means we have ", (total_days - total_wdays), " + ", 30, " leaves in this year :-)");                                                                    
-		console.log("Completed Working days: ", start_date.businessDiff(today, 'days') - 1);                                                                                  
-		console.log("Remaining working days: ", today.businessDiff(end_date, 'days'));                                                                                        
-}                     
+// Just for Fun -- :-)
+function print_fun_info() {
+	var start_date = moment().startOf('year');
+	var end_date = moment().endOf('year');
+	var today = moment();
+	var total_wdays = start_date.businessDiff(end_date, 'days');
+	var total_days = end_date.diff(start_date, 'days');
+	console.log("\nNot sure why you came to look for console!"
+		, "\nBut here are some extra details I can give for you \n"
+		, "\nLet's say all weekends are considered as holidays"
+		, "\nAnd we have ", CompanyHolidays.length, " gvt. holidays "
+		, HolidayList
+		, "\n \nSo, In this year we have: ", total_days,  " total days"
+		, "\nand in that, we have only ", total_wdays, ' working days'
+		, "\nand we also have 18PL + 12SL (30 leaves)"
+		, "\n \nWhich means we have ", (total_days - total_wdays), " + ", 30, " leaves in this year :-)");
+		console.log("Completed Working days: ", start_date.businessDiff(today, 'days') - 1);
+		console.log("Remaining working days: ", today.businessDiff(end_date, 'days'));
+}
 
 /**
 *  On load, called to load the auth2 library and API client library.
@@ -722,11 +724,11 @@ function process_all_events(events) {
 			}
 
 			all_rows[i] = [
-				cols[0], 
-				cols[1], 
+				cols[0],
+				cols[1],
 				date,
 				month + ", " + day,
-				event_dates, 
+				event_dates,
 			days];
 
 			auto_completes[cols[1]] = 1;
@@ -978,7 +980,7 @@ function chart_data(x_axis, series, title_txt, sub_text) {
 		},
 		series: {
 			dataLabels: {
-				enabled: dataLabels_enabled, 
+				enabled: dataLabels_enabled,
 				color: '#FFFFFF',
 				style: {fontWeight: 'bolder'},
 				formatter: function() {return this.y},
@@ -1375,7 +1377,7 @@ function create_event(data) {
 	};
 
 	var details = "Title:  " + event.summary + "\n";
-	details +=    "From:  " + event.start.dateTime + "\n"; 
+	details +=    "From:  " + event.start.dateTime + "\n";
 	details +=    "To:  " + event.end.dateTime + "\n \n";
 	details +=    " I will be creating above event.";
 
@@ -1452,7 +1454,7 @@ function getBiMonthlyTable(data) {
 					row1.append('<td>' + events[event] + '</td>');
 					atleast_one = true;
 				}
-				else { 
+				else {
 					row1.append('<td>-</td>');
 				}
 			});
@@ -1505,13 +1507,13 @@ var progress_bar_timer;
 function progress_bar(msg, completed) {
 	if(!completed) {
 		$('#processing_msg').text(msg);
-		progress_bar_timer = setTimeout( function() { 
-			$(".processing").show(); 
+		progress_bar_timer = setTimeout( function() {
+			$(".processing").show();
 		}, 1);
 	}
 	else {
 		clearTimeout(progress_bar_timer);
-		$(".processing").hide(); 
+		$(".processing").hide();
 	}
 }
 

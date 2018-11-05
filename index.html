@@ -1,13 +1,11 @@
 <html>
 
 <head>
-    <title>ESI India Calendar Events</title>
+	<title>Simple Leave Management App</title>
 	<meta charset='utf-8' />
 
-	<meta name="name" property="og:title" content="ESI Leave planner">
-	<meta name="description" property="og:description" content="Check Leaves and events list of Exceleron Software India">
-	<meta name="image" property="og:image" content="https://www.exceleron.com/wp-content/uploads/2016/08/Exceleron-Logo-Horz-rgb-e1470342848695.png">
-	<meta name="url" property="og:url" content="http://dev01.blr.exceleron.in:8000/leaves">
+	<meta name="name" property="og:title" content="Simple Leave Management App">
+	<meta name="description" property="og:description" content="Check Leaves and events list of your company">
 
 	<meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0" />
 	<meta http-equiv="cache-control" content="max-age=0" />
@@ -47,10 +45,9 @@
 
 <body>
 
-	<!--<h3>ESI India Google Calendar events</h3>-->
 	<div class="header row" id='fixed-header'>
 		<div class="col-md-6 col-xs-12">
-			<h4>Exceleron India - Caledar Events</h4>
+			<h4><span class="company_name">Company</span> - Caledar Events</h4>
 		</div>
 		<div class="col-md-6 col-xs-12">
 			<div class="options-box">
@@ -58,8 +55,8 @@
 				<button id="show-fetch-filter" class="btn btn-primary glyphicon glyphicon-filter" data-toggle="collapse" data-target="#fetch-filter" aria-expanded="false" aria-controls="fetch-filter" title="Filters"></button>
 				<button id="show_cal" class="hidden-xs btn btn-primary glyphicon glyphicon-calendar" title="Calendar"></button>
 				<button class="btn btn-primary glyphicon glyphicon-signal" id="show-graph" title="Charts"></button>
-				<button class="btn btn-primary glyphicon glyphicon-gift" data-toggle="modal" data-target="#exceleron_birthdays" title="Birthdays"></button>
-				<button class="btn btn-primary glyphicon glyphicon-heart-empty" data-toggle="modal" data-target="#exceleron_holidays" title="Holidays"></button>
+				<button class="btn btn-primary glyphicon glyphicon-gift" data-toggle="modal" data-target="#company_birthdays" title="Birthdays"></button>
+				<button class="btn btn-primary glyphicon glyphicon-heart-empty" data-toggle="modal" data-target="#company_holidays" title="Holidays"></button>
 				<button class="btn btn-primary glyphicon glyphicon-plus" id="show_add_event" data-toggle="modal" data-target="#add_event_modal" title="Add Event"></button>
 				<button class="btn btn-primary glyphicon glyphicon-download-alt" id="monthly-report" class="hide" data-toggle="modal" data-target="#bi-monthly-chooser" title="Download Monthly Report"></button>
 				<span class="login-box">
@@ -71,7 +68,7 @@
 	</div>
 	<div id="sign-in-info" class="filter-container">
 		<center>
-			<h3>Please <a onclick="handleAuthClick();" href="#">Login</a> with your exceleron account to continue...!</h3>
+			<h3>Please <a onclick="handleAuthClick();" href="#">Login</a> with your <span class="compay_name">official</span> account to continue...!</h3>
 		</center>
 	</div>
 
@@ -222,7 +219,7 @@
 	</div> <!-- end of #container -->
 	<!-- <p>Click on the legends in the above chart to show/hide a specific type of event from the chart.</p> -->
     <center>
-        <p>Any feedback or feature request? <a href="mailto:dinesh@exceleron.com">Contact: Dinesh</a></p>
+        <p>Any feedback or feature request? <a href="mailto:dd.dinesh.rajakumar@gmail.com">Contact: Dinesh</a></p>
     </center>
 
 	<div class="processing"></div>
@@ -232,12 +229,12 @@
 	</div>
 
 	<!-- Holidays List Modal -->
-	<div id="exceleron_holidays" class="modal fade exceleron_holidays" data-keyboard="true">
+	<div id="company_holidays" class="modal fade company_holidays" data-keyboard="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<a class="close" data-dismiss="modal" href="#">x</a>
-					<h3 style="text-align:center;">Exceleron Holidays</h3>
+					<h3 style="text-align:center;"><span class="company_name">Company</span> Holidays</h3>
 				</div>
 				<div class="modal-body">
 					<table id="holidays_list" class="table table-bordered table-striped">
@@ -400,12 +397,12 @@
 	</div>
 
 	<!-- Birthdays List Modal -->
-	<div id="exceleron_birthdays" class="modal fade exceleron_holidays">
+	<div id="company_birthdays" class="modal fade company_holidays">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<a class="close" data-dismiss="modal" href="#">x</a>
-					<h3 style="text-align:center;">Exceleron Birthdays</h3>
+					<h3 style="text-align:center;"><span class="company_name">Company</span> Birthdays</h3>
 				</div>
 				<div class="modal-body">
 					<table id="birthdays_list" class="table table-bordered table-striped">
