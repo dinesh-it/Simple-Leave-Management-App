@@ -202,8 +202,12 @@ function bind_events() {
 		}
 	});
 
+	var cur_global_search = '';
 	$('#global_search').on('keyup change', function () {
-		$('#all-events').DataTable().search(this.value, true, true).draw();
+		if(cur_global_search != this.value.toUpperCase()) {
+			$('#all-events').DataTable().search(this.value, true, true).draw();
+			cur_global_search = this.value.toUpperCase();
+		}
 	});
 
 	event_list_table = $('#all-events').dataTable({
