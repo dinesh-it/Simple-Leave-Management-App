@@ -18,6 +18,7 @@ var this_month = today.format('YYYY-MM');
 var today_date = today.format('YYYY-MM-DD');
 var today_tmrw = [today.format('DD'), today.clone().add(1,'days').format('DD')];
 var today_events = {};
+var last_session_validated = 0;
 
 // Array of API discovery doc URLs for APIs used by the quickstart
 var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
@@ -47,7 +48,9 @@ $(document).ready(function() {
 	$(".filter-box").hide();
 	$(window).on("focus", function(event)
 	{
-		validate_session();
+		if(moment() - last_session_validated > 180000) {
+			validate_session();
+		}
 		return false;
 	});
 
@@ -438,7 +441,7 @@ function bind_events() {
 		progress_bar("Preparing download!");
 		var table = getBiMonthlyTable(cumulative_data);
 		if(!table) {
-			alert("No records found, Please select month which has data");
+			m_alert("No records found, Please select month which has data");
 			e.preventDefault();
 			e.stopPropagation();
 			progress_bar('',true);
@@ -530,6 +533,7 @@ function initClient() {
 *  appropriately. After a sign-in, the API is called.
 */
 function updateSigninStatus(isSignedIn) {
+	last_session_validated = moment();
 	if (isSignedIn) {
 		progress_bar("SignIn Success!");
 		updateLoginInfo(gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile());
@@ -539,9 +543,8 @@ function updateSigninStatus(isSignedIn) {
 		var from = params['from'];
 		var to = params['to'];
 		listEvents(from,to);
+		$('.valid-session').show();
 		$('#sign-in-info').hide();
-		$('#content').show();
-		$('.header').show();
 		$('.filter-box').show();
 		$('#calendar_iframe').html(calendar_iframe);
 		print_fun_info();
@@ -549,18 +552,21 @@ function updateSigninStatus(isSignedIn) {
 		progress_bar("Logged Out!");
 		authorizeButton.style.display = 'inline';
 		signoutButton.style.display = 'none';
+		$('.valid-session').hide();
 		$('#sign-in-info').show();
-		$('#content').hide();
-		$('.header').hide();
 		$('.filter-box').hide();
 		$('#calendar_iframe').html('');
+		progress_bar("", true);
+		setTimeout(function() { $('.processing').hide() }, 1000);
 	}
 	progress_bar('',true);
 }
 
 function validate_session() {
+	console.log("Validating Session!");
+	last_session_validated = moment();
 	if(!gapi.auth2.getAuthInstance().isSignedIn.get()) {
-		alert("Session expired!");
+		m_alert("Session expired!");
 		updateSigninStatus(false);
 		return false;
 	}
@@ -1494,7 +1500,7 @@ function gapi_resp_process(event, callback) {
 		if(login_name != 'Dinesh') {
 			msg += "\nSeems bug? Inform to Dinesh D!";
 		}
-		alert(msg);
+		m_alert(msg);
 	}
 	else if(event.status && event.status == 'confirmed') {
 		listEvents();
@@ -1503,7 +1509,7 @@ function gapi_resp_process(event, callback) {
 		}
 	}
 	else {
-		alert('Something went wrong!');
+		m_alert('Something went wrong!');
 	}
 }
 

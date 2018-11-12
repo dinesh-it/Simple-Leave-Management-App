@@ -45,7 +45,7 @@
 
 <body>
 
-	<div class="header row" id='fixed-header'>
+	<div class="header row valid-session" id='fixed-header'>
 		<div class="col-md-6 col-xs-12">
 			<h4><span class="company_name">Company</span> - Caledar Events</h4>
 		</div>
@@ -94,7 +94,7 @@
 
 	<!--<center><h4>Chart work in progress <small>- Dinesh</small></h4></center>-->
 
-	<div class="collapse" id="total_events_gauge">
+	<div class="collapse valid-session" id="total_events_gauge">
 		<div class="col-md-12 bottom-space col-xs-12">
 			<div class="col-md-6 bottom-space">
 				<div class="col-md-3 col-xs-6 center">
@@ -137,16 +137,16 @@
 		</div>
 	</div>
 
-	<div id="chart-container" class="collapse hidden-xs col-md-12"></div>
-	<div id="chart-container-monthly" class="collapse col-md-8 col-xs-12"></div>
-	<div id="chart-container-weekly" class="collapse col-md-4 col-xs-12"></div>
+	<div id="chart-container" class="collapse hidden-xs col-md-12 valid-session"></div>
+	<div id="chart-container-monthly" class="collapse col-md-8 col-xs-12 valid-session"></div>
+	<div id="chart-container-weekly" class="collapse col-md-4 col-xs-12 valid-session"></div>
 	<div id="calender_view" class="collapse hidden-xs">
 		<center id="calendar_iframe">
 		</center>
 	</div>
-	<div class="" id="content">
-	<div class="col-md-12">
-	<div class="col-md-7 col-xs-12 div-bg">
+	<div class="valid-session">
+	<div class="col-md-12 valid-session">
+	<div class="col-md-7 col-xs-12 div-bg valid-session">
 		<center>
 			<strong>Date Wise event list</strong>
 			<span class="label today">Today</span>
@@ -167,7 +167,7 @@
 		</thead>
 	</table>
 	</div>
-	<div class="col-md-5 col-xs-12 div-bg">
+	<div class="col-md-5 col-xs-12 div-bg valid-session">
 		<center>
 			<strong>Individual Leaves Taken count in Days</strong>
 			<a download="Leave-count.xls" href="#" onclick="return ExcellentExport.excel(this, 'all-events-report', 'Sheet Name Here');">Download</a>
