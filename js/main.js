@@ -270,12 +270,12 @@ function bind_events() {
 					set_today_event(col);
 				}
 			}
-		},
+		}
 
 	}).yadcf(
 		[
 			{
-				column_number: 0,
+				column_number: 0
 			},
 			{
 				column_number: 1,
@@ -459,10 +459,10 @@ function bind_events() {
 		}
 		var div = $('#bi-monthly-months');
 
-		var str = `<div class="form-check">
-		<input class="form-check-input" type="checkbox" value="" id="">
-		<label class="form-check-label" for=""></label>
-		</div>`;
+		var str = '<div class="form-check">' +
+		'<input class="form-check-input" type="checkbox" value="" id="">' + 
+		'<label class="form-check-label" for=""></label>' +
+		'</div>';
 
 		div.html('');
 
@@ -495,7 +495,7 @@ function print_fun_info() {
 		, "\nand we also have 18PL + 12SL (30 leaves)"
 		, "\n \nWhich means we have ", (total_days - total_wdays), " + ", 30, " leaves in this year :-)");
 		console.log("Completed Working days: ", start_date.businessDiff(today, 'days') - 1);
-		console.log("Remaining working days: ", today.businessDiff(end_date, 'days'));
+		console.log("Remaining working days: ", today.businessDiff(end_date, 'days (' + today.format('DD/MM/YY') + ' to ' + end_date.format('DD/MM/YY') + ')'));
 }
 
 /**
@@ -709,6 +709,7 @@ function process_all_events(events) {
 	var birthdays = {};
 	var auto_completes = {};
 	cumulative_data = {};
+	var returns;
 	if (events && events.length > 0) {
 		for (i = 0; i < events.length; i++) {
 			var event = events[i];
@@ -723,8 +724,13 @@ function process_all_events(events) {
 
 			col_0_vals[cols[0]] = 1;
 
-			var [days,event_dates] = days_diff(start, end);
-			var [date, month, day] = getFormatedTime(start, days, end);
+			returns = days_diff(start, end);
+			var days = returns[0];
+			var event_dates = returns[1];
+			returns = getFormatedTime(start, days, end);
+			var date = returns[0];
+			var month = returns[1];
+			var days = returns[2];
 
 			// May be some other more accurate way
 			if(cols[0].match(/^H/i)) {
@@ -994,7 +1000,7 @@ function chart_data(x_axis, series, title_txt, sub_text) {
 				color: '#FFFFFF',
 				style: {fontWeight: 'bolder'},
 				formatter: function() {return this.y},
-				inside: true,
+				inside: true
 				//rotation: 270
 			},
 			pointPadding: 0,
@@ -1334,9 +1340,9 @@ function populate_counts_table(filtered_data, cols) {
 	all_events_report = $('#all-events-report').dataTable({
 		"bJQueryUI": true,
 		"bProcessing": true,
-		'iDisplayLength': 50,
+		'iDisplayLength': 50
 	}).yadcf([{
-		column_number: 0,
+		column_number: 0
 		//column_data_type: "html"
 	}]);
 

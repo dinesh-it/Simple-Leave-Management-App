@@ -10,7 +10,7 @@ var event_limits = {
 	SL: 10
 };
 var admin_names = {
-	DINESH: 1,
+	DINESH: 1
 };
 
 var HolidayList = {
@@ -23,6 +23,6 @@ var HolidayList = {
 	'2018-10-02':"Gandhi Jayanthi*",
 	'2018-10-19':"Vijayadashami",
 	'2018-11-08':"Deepavali (Balipadyami)",
-	'2018-12-25':"Christmas",
+	'2018-12-25':"Christmas"
 };
 
