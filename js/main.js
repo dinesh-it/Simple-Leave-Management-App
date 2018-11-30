@@ -495,7 +495,7 @@ function print_fun_info() {
 		, "\nand we also have 18PL + 12SL (30 leaves)"
 		, "\n \nWhich means we have ", (total_days - total_wdays), " + ", 30, " leaves in this year :-)");
 		console.log("Completed Working days: ", start_date.businessDiff(today, 'days') - 1);
-		console.log("Remaining working days: ", today.businessDiff(end_date, 'days (' + today.format('DD/MM/YY') + ' to ' + end_date.format('DD/MM/YY') + ')'));
+		console.log("Remaining working days: ", today.businessDiff(end_date, 'days'),  ' (' + today.format('DD/MM/YY') + ' to ' + end_date.format('DD/MM/YY') + ')'));
 }
 
 /**
