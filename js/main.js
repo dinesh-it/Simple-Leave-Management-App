@@ -730,7 +730,7 @@ function process_all_events(events) {
 			returns = getFormatedTime(start, days, end);
 			var date = returns[0];
 			var month = returns[1];
-			var days = returns[2];
+			var day = returns[2];
 
 			// May be some other more accurate way
 			if(cols[0].match(/^H/i)) {
