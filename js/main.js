@@ -979,7 +979,7 @@ function chart_data(x_axis, series, title_txt, sub_text) {
 
 	var dataLabels_enabled = false;
 
-	if(x_axis.length * series.length < 40) {
+	if(x_axis.length * series.length < 50) {
 		dataLabels_enabled = true;
 	}
 
