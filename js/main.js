@@ -461,21 +461,23 @@ function bind_events() {
 
 		var str = '<div class="form-check">' +
 		'<input class="form-check-input" type="checkbox" value="" id="">' + 
-		'<label class="form-check-label" for=""></label>' +
+		'&nbsp;<label class="form-check-label" for=""></label>' +
 		'</div>';
 
 		div.html('');
+		var current_month = moment().month();
 
-		$.each(cumulative_data, function(month, events){
+		$.each(moment.months(), function(number, month){
 			var ele = $(str);
-			ele.find('input').val(month).attr('id', 'bi-'+month);
+			var selected = false;
+			if(current_month-1 == number) {
+				selected = true;
+			}
+			ele.find('input').val(month).attr('id', 'bi-'+month).prop('checked', selected);
 			ele.find('label').text(month).attr('for', 'bi-'+month);
 			div.append(ele);
 		});
 	});
-
-
-
 }
 
 // Just for Fun -- :-)
