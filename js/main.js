@@ -495,7 +495,7 @@ function print_fun_info() {
 		, "\nand we also have 18PL + 12SL (30 leaves)"
 		, "\n \nWhich means we have ", (total_days - total_wdays), " + ", 30, " leaves in this year :-)");
 		console.log("Completed Working days: ", start_date.businessDiff(today, 'days') - 1);
-		console.log("Remaining working days: ", today.businessDiff(end_date, 'days'),  ' (' + today.format('DD/MM/YY') + ' to ' + end_date.format('DD/MM/YY') + ')'));
+		console.log("Remaining working days: ", today.businessDiff(end_date, 'days'),  ' (' + today.format('DD/MM/YY') + ' to ' + end_date.format('DD/MM/YY') + ')');
 }
 
 /**
@@ -607,14 +607,18 @@ function listEvents(from, to) {
 		to = moment().endOf('year').format('MM/DD/YYYY');
 	}
 
-	var from_date_obj = new Date(from);
-	from_date_obj.setUTCHours(0,0,0,0);
-	var to_date_obj = new Date(to);
-	to_date_obj.setUTCHours(23,59,59,999);
-	var from_date = from_date_obj.toISOString();
-	var to_date = to_date_obj.toISOString();
+	var from_date_obj = moment(from, 'MM/DD/YYYY');
+	var to_date_obj = moment(to, 'MM/DD/YYYY');
+
+	// to_date should be end of the day
+	to_date_obj.add(1,'days').subtract(1, 'seconds');;
+
 	$("#datepicker-from").datepicker('setDate', from);
 	$("#datepicker-to").datepicker('setDate', to);
+
+	// Set ISO date format
+	var from_date = from_date_obj.format();
+	var to_date = to_date_obj.format();
 
 	var status = gapi.client.calendar.events.list({
 		'calendarId': Calendar_id,
