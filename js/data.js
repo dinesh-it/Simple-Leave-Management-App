@@ -26,3 +26,13 @@ var HolidayList = {
 	'2018-12-25':"Christmas"
 };
 
+var company_name = 'Company';
+
+// Carry forwards and or subtractions/ additions to their default event limits
+// This will be directly applied for the current filter
+var user_extra_allowance = {
+	'Dinesh' : {
+		PL: 6, // Add 6 PL (carry forward)
+		SL: -2 // Reduce 2 SL's
+	}
+};

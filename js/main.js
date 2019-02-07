@@ -1311,6 +1311,9 @@ function populate_counts_table(filtered_data, cols) {
 					var taken_percent = (event_days[event]/event_limits[event]) * 100;
 					tt_msg += ' leave(s)  (' + parseInt(taken_percent) + '%)';
 					var remain_days = event_limits[event] - event_days[event];
+					if(user_extra_allowance && user_extra_allowance[name] && user_extra_allowance[name][event]) {
+						remain_days += user_extra_allowance[name][event];
+					}
 					if(remain_days > 0) {
 						tt_msg += "\nRemaining: " + remain_days + ' leave(s)';
 					}
