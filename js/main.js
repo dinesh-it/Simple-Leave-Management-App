@@ -1305,10 +1305,11 @@ function populate_counts_table(filtered_data, cols) {
 	$.each(filtered_data, function(name, event_days) {
 		row_str = '<tr>';
 		row_str += '<td class="link">' + name + '</td>';
+		var td_class = 'link high';
 		$.each(cols, function(i, event) {
+			var tt_msg = event + " : " + name;
 			if(event_days[event] && event_days[event] > 0){
-				var td_class = 'link high';
-				var tt_msg = event + " : " + name + "\nTaken/Applied: " + event_days[event];
+				tt_msg += "\nTaken/Applied: " + event_days[event];
 				if(event_limits[event]) {
 					var taken_percent = (event_days[event]/event_limits[event]) * 100;
 					tt_msg += ' leave(s)  (' + parseInt(taken_percent) + '%)';
@@ -1338,7 +1339,12 @@ function populate_counts_table(filtered_data, cols) {
 				row_str += '<td class="' + td_class + '" data-toggle="tooltip" title="' + tt_msg + '">' + event_days[event] + '</td>';
 			}
 			else {
-				row_str += '<td class="link high">0</td>';
+				tt_msg += "\nTaken/Applied: 0";
+				if(event_limits[event]) {
+					var remain_days = event_limits[event];
+					tt_msg += "\nRemaining: " + remain_days + ' leave(s)';
+				}
+				row_str += '<td class="' + td_class + '" data-toggle="tooltip" title="' + tt_msg + '">0</td>';
 			}
 		});
 		row_str += '</tr>';
