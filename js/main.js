@@ -288,6 +288,9 @@ function bind_events() {
 		var msg = '';
 		if(event_limits[selected]) {
 			var remain = event_limits[selected] - logged_in_user_data[selected];
+			if(user_extra_allowance && user_extra_allowance[login_name] && user_extra_allowance[login_name][selected]) {
+				remain += user_extra_allowance[login_name][selected];
+			}
 			if(remain > 1) {
 				msg = remain + ' leave(s)';
 			}
@@ -401,6 +404,11 @@ function bind_events() {
 		var info = '';
 		if(event_limits[et]) {
 			var remain = event_limits[et] - logged_in_user_data[et] - days - 1;
+
+			if(user_extra_allowance && user_extra_allowance[login_name] && user_extra_allowance[login_name][et]) {
+				remain += user_extra_allowance[login_name][et];
+			}
+
 			if(remain < 0) {
 				info = remain * -1 + ' LOP';
 			}
@@ -1302,28 +1310,29 @@ function populate_counts_table(filtered_data, cols) {
 			if(event_days[event] && event_days[event] > 0){
 				tt_msg += "\nTaken/Applied: " + event_days[event];
 				if(event_limits[event]) {
-					var taken_percent = (event_days[event]/event_limits[event]) * 100;
-					tt_msg += ' leave(s)  (' + parseInt(taken_percent) + '%)';
-					var remain_days = event_limits[event] - event_days[event];
+					event_limit_count = event_limits[event];
 					if(user_extra_allowance && user_extra_allowance[name] && user_extra_allowance[name][event]) {
-						remain_days += user_extra_allowance[name][event];
+						event_limit_count += user_extra_allowance[name][event];
 					}
+
+					var remain_days = event_limit_count - event_days[event];
+					var taken_percent = (event_days[event]/event_limit_count) * 100;
+					tt_msg += ' leave(s)  (' + parseInt(taken_percent) + '%)';
+
 					if(remain_days > 0) {
 						tt_msg += "\nRemaining: " + remain_days + ' leave(s)';
 					}
 					else if(remain_days < 0) {
 						tt_msg += "\nOverdue: " + (remain_days * -1) + ' leave(s)';
-					}
-
-					if(taken_percent > 100) {
 						td_class += ' danger'
 						tt_msg += "\nAlready in LOP";
 					}
-					else if(taken_percent == 100) {
+					else if(remain_days == 0) {
 						td_class += ' warning'
 						tt_msg += "\nUsed all";
 					}
-					else if(taken_percent > 80) {
+
+					if(taken_percent > 80 && taken_percent < 100) {
 						td_class += ' warning'
 					}
 				}
@@ -1604,6 +1613,9 @@ function draw_fuel_graph() {
 	$.each(['SL', 'PL'], function(i,v) {
 		var cp_config = d3_gauge_config;
 		cp_config.maxValue = event_limits[v];
+		if(user_extra_allowance && user_extra_allowance[login_name] && user_extra_allowance[login_name][v]) {
+			cp_config.maxValue += user_extra_allowance[login_name][v];
+		}
 		if(!logged_in_user_data[v]) {
 			logged_in_user_data[v] = 0;
 		}
@@ -1634,8 +1646,12 @@ function draw_fuel_graph() {
 function show_event_names(t) {
 	if(t.match(/^IN-/)) {
 		var tt = t.split('-')[1];
+		var limit = event_limits[tt];
+		if(user_extra_allowance && user_extra_allowance[login_name] && user_extra_allowance[login_name][tt]) {
+			limit += user_extra_allowance[login_name][tt];
+		}
 		var msg = 'You(' + login_name + ') have taken/applied ';
-		msg += logged_in_user_data[tt] + ' ' + tt + ' out of ' + event_limits[tt];
+		msg += logged_in_user_data[tt] + ' ' + tt + ' out of ' + limit;
 		msg += "\n \n*Counts calculated per calendar year";
 		m_alert(msg, "Your(" + login_name + ") " + tt);
 	}
