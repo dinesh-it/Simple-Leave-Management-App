@@ -16,7 +16,8 @@ var show_graph_flag = false;
 var today = moment();
 var this_month = today.format('YYYY-MM');
 var today_date = today.format('YYYY-MM-DD');
-var today_tmrw = [today.format('DD'), today.clone().add(1,'days').format('DD')];
+var tomorrow_date = today.clone().add(1, 'days').format('YYYY-MM-DD');
+var today_date_dd = today.format('DD');
 var today_events = {};
 var last_session_validated = 0;
 
@@ -230,21 +231,15 @@ function bind_events() {
 		"rowCallback": function(row, col, i){
 			// Check if this event occurs today, tomorrow or in future.
 			if(col[2] >= this_month) {
-				if(col[2] == today_date || (col[2] < (this_month + '-31') && col[4].match(today_tmrw[0]))){
+				if(col[2] == today_date || (col[2] < (this_month + '-31') && col[4].match(today_date_dd))){
 					$(row).addClass('today');
 					set_today_event(col);
 				}
 				else if(col[2] > today_date){
-					var date_arr = col[4].split(',');
-					var found = 0;
-					$.each(date_arr, function(i,v){
-						if(parseInt(v) == parseInt(today_tmrw[1])){
-							$(row).addClass('tomorrow');
-							found = 1;
-							return;
-						}
-					});
-					if(!found){
+					if(col[2] == tomorrow_date) {
+						$(row).addClass('tomorrow');
+					}
+					else {
 						$(row).addClass('future');
 					}
 				}
@@ -256,10 +251,6 @@ function bind_events() {
 						set_today_event(col);
 					}
 				}
-				else if(col[4].match(today_tmrw[1])){
-					$(row).addClass('tomorrow');
-				}
-
 			}
 			// For range of dates
 			else if(col[4].match('to')){
@@ -1384,8 +1375,9 @@ function create_event(data) {
 	var end_time = { 'timeZone': time_zone };
 
 	if(data.add_event_day == 'FULL') {
-		start_time.dateTime = moment(data.from_date + ' 10:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
-		end_time.dateTime = moment(data.to_date + ' 18:30', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
+		start_time.dateTime = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
+		var to_date_obj = moment(data.to_date + ' 00:00', 'DD/MM/YYYY HH:mm').add(1, 'days');
+		end_time.dateTime = to_date_obj.format('YYYY-MM-DDTHH:mm:ss');
 	}
 	else if(data.add_event_day == 'FH') {
 		start_time.dateTime = moment(data.from_date + ' 10:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
