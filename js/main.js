@@ -137,6 +137,11 @@ function initialize() {
 	$('.options-box button').tooltip({
 		placement: 'bottom'
 	});
+
+	// Remove graph on collapse complete, to fix issue - graph overlay on another graph
+	$('#chart-container*').on('hidden.bs.collapse', function(e) {
+		$(e.target).html('');
+	});
 }
 
 function bind_events() {
