@@ -153,3 +153,6 @@ input.date_search {
 .tooltip {
 	white-space: pre-line;
 }
+#cal_list {
+	height: 33px;
+}

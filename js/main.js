@@ -65,8 +65,6 @@ $(document).ready(function() {
 	authorizeButton = document.getElementById("authorize-button");
 	signoutButton = document.getElementById("signout-button");
 
-	calendar_iframe = '<iframe src="https://calendar.google.com/calendar/embed?src=' + encodeURI(Calendar_id) + '&ctz=Asia/Calcutta" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>';
-
 	init_holiday_list();
 	initialize();
 
@@ -482,6 +480,13 @@ function bind_events() {
 			div.append(ele);
 		});
 	});
+
+	$('#cal_list').change(function() {
+		var cal_id = $('#cal_list').val();
+		eraseCookie('sci');
+		createCookie('sci', cal_id, 9999);
+		refresh_data();
+	});
 }
 
 // Just for Fun -- :-)
@@ -548,12 +553,34 @@ function updateSigninStatus(isSignedIn) {
 		var params = getUrlVars();
 		var from = params['from'];
 		var to = params['to'];
-		listEvents(from,to);
 		$('.valid-session').show();
 		$('#sign-in-info').hide();
 		$('.filter-box').show();
-		$('#calendar_iframe').html(calendar_iframe);
-		print_fun_info();
+
+		$('#cal_list').html('');
+		var sel_cal_id = get_calendar_id();
+		var cal_list_req = gapi.client.calendar.calendarList.list();
+		progress_bar("Getting Calendar list");
+		cal_list_req.execute(function(resp) {
+			var calendars = resp.items;
+			$.each(calendars, function(i, cal) {
+				var opt = $('<option value="' + cal.id + '">' + cal.summary + '</option>');
+				if(sel_cal_id && sel_cal_id == cal.id) {
+					opt.attr('selected', 'selected');
+				}
+
+				console.log(sel_cal_id, i);
+				if(!sel_cal_id && i == 0) {
+					opt.attr('selected', 'selected');
+				}
+				$('#cal_list').append(opt);
+			});
+			listEvents(from,to);
+			calendar_iframe = '<iframe src="https://calendar.google.com/calendar/embed?src=' + encodeURI(get_calendar_id()) + '&ctz=Asia/Calcutta" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>';
+			$('#calendar_iframe').html(calendar_iframe);
+			print_fun_info();
+		});
+
 	} else {
 		progress_bar("Logged Out!");
 		authorizeButton.style.display = 'inline';
@@ -608,6 +635,13 @@ function handleSignoutClick(event) {
 function listEvents(from, to) {
 
 	progress_bar("Fetching data...");
+	var calendar_id = get_calendar_id();
+
+	if(!calendar_id) {
+		progress_bar("ERROR: Failed to choose calendar!");
+		return;
+	}
+
 	if (!from || !to) {
 		from = moment().startOf('year').format('MM/DD/YYYY');
 		to = moment().endOf('year').format('MM/DD/YYYY');
@@ -627,7 +661,7 @@ function listEvents(from, to) {
 	var to_date = to_date_obj.format();
 
 	var status = gapi.client.calendar.events.list({
-		'calendarId': Calendar_id,
+		'calendarId': calendar_id,
 		'timeMin': from_date,
 		'timeMax': to_date,
 		'showDeleted': false,
@@ -643,6 +677,17 @@ function listEvents(from, to) {
 			$("#type_" + v).removeAttr('checked').trigger('change');
 		});
 	});
+}
+
+function get_calendar_id() {
+	var cookie_cal_id = readCookie('sci');
+	if(cookie_cal_id) {
+		console.log("Cookie: ", cookie_cal_id);
+		return cookie_cal_id;
+	}
+
+	console.log('selected: ', $('#cal_list').val());
+	return $('#cal_list').val();
 }
 
 // We will get logged in User info here
@@ -1425,7 +1470,7 @@ function create_event(data) {
 
 	progress_bar("Creating event...");
 	var request = gapi.client.calendar.events.insert({
-		'calendarId': Calendar_id,
+		'calendarId': get_calendar_id(),
 		'resource': event
 	});
 
@@ -1509,15 +1554,15 @@ function getBiMonthlyTable(data) {
 	return table;
 }
 
-function delete_event(event_id) {
-	var request = gapi.client.calendar.events.delete({
-		'calendarId': Calendar_id,
-		'eventId': event_id
-	});
-	request.execute(function(event) {
-		gapi_resp_process(event, function () { $('#add_event_modal').modal('hide'); });
-	});
-}
+//function delete_event(event_id) {
+//	var request = gapi.client.calendar.events.delete({
+//		'calendarId': get_calendar_id(),
+//		'eventId': event_id
+//	});
+//	request.execute(function(event) {
+//		gapi_resp_process(event, function () { $('#add_event_modal').modal('hide'); });
+//	});
+//}
 
 function gapi_resp_process(event, callback) {
 
@@ -1710,3 +1755,29 @@ function add_birthdays(BirthdayList) {
 	bd_done = true;
 }
 
+// Cookies
+function createCookie(name, value, days) {
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+		var expires = "; expires=" + date.toGMTString();
+	}
+	else var expires = "";               
+
+	document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function readCookie(name) {
+	var nameEQ = name + "=";
+	var ca = document.cookie.split(';');
+	for (var i = 0; i < ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+	}
+	return null;
+}
+
+function eraseCookie(name) {
+	createCookie(name, "", -1);
+}

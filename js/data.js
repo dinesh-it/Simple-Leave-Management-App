@@ -3,7 +3,6 @@
 var CLIENT_ID = 'YOUR-GOOGLE-DEVELOPER-API-CLIENT-ID';
 var Type_Filter = ['PL', 'SL', 'ML', 'PTL', 'MTL', 'RL', 'WFH', 'CO', 'LOP', 'HBD', '-'];
 var remove_events = ['-', 'HBD', 'MTL', 'PTL', 'ML', 'RL', 'LOP'];
-var Calendar_id = 'SHARED-CALENDAR-ID';
 var total_emps = 40;
 var event_limits = {
 	PL: 20,
