@@ -1415,22 +1415,29 @@ function create_event(data) {
         'timeZone': time_zone
     };
 
-    if (data.add_event_day == 'FULL') {
-        start_time.dateTime = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
-        var to_date_obj = moment(data.to_date + ' 00:00', 'DD/MM/YYYY HH:mm').add(1, 'days');
-        end_time.dateTime = to_date_obj.format('YYYY-MM-DDTHH:mm:ss');
-    } else if (data.add_event_day == 'FH') {
-        start_time.dateTime = moment(data.from_date + ' 10:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
-        end_time.dateTime = moment(data.from_date + ' 13:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
-    } else if (data.add_event_day == 'SH') {
-        start_time.dateTime = moment(data.from_date + ' 14:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
-        end_time.dateTime = moment(data.from_date + ' 18:30', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DDTHH:mm:ss');
-    }
+	var start_str;
+	var end_str;
+	var desc = '';
+
+	if (data.add_event_day == 'FULL') {
+		start_time.date = start_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
+		var to_date_obj = moment(data.to_date + ' 00:00', 'DD/MM/YYYY HH:mm').add(1, 'days');
+		end_time.date = end_str = to_date_obj.format('YYYY-MM-DD');
+	} else if (data.add_event_day == 'FH' || data.add_event_day == 'SH') {
+		start_time.date = start_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
+		end_time.date = end_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
+		if(data.add_event_day == 'FH') {
+			desc = '(First Half)';
+		}
+		else if(data.add_event_day == 'SH') {
+			desc = '(Second Half)';
+		}
+	}
 
     var event = {
         'summary': data.new_event_title,
         'location': data.location,
-        'description': data.description,
+        'description': desc + ' ' + data.description,
         'reminders': {
             'useDefault': true
         },
@@ -1439,8 +1446,8 @@ function create_event(data) {
     };
 
     var details = "Title:  " + event.summary + "\n";
-    details += "From:  " + event.start.dateTime + "\n";
-    details += "To:  " + event.end.dateTime + "\n \n";
+    details += "From:  " + start_str + "\n";
+    details += "To:  " + end_str + "\n\n";
     details += " I will be creating above event.";
 
     if (!confirm(details)) {
