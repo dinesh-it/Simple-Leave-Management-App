@@ -46,11 +46,13 @@
 <body>
 
 	<div class="header row valid-session" id='fixed-header'>
-		<div class="col-md-6 col-xs-12">
-			<h4><span class="company_name">Company</span> - Calendar Events</h4>
+		<div class="col-md-4 col-xs-12">
+				<h4><span class="company_name">Company</span> - Calendar Events</h4>
 		</div>
-		<div class="col-md-6 col-xs-12">
-			<div class="options-box">
+
+		<div class="col-md-8 col-xs-12">
+			<div class="options-box form-inline">
+				<input id="global_search" class="form-control form-control-sm ml-3 w-75 glyphicon" type="text" placeholder="&#xe003 search global" aria-label="Search" title="Global search with regular expression support">
 				<button id="filter-reset" class="btn btn-danger hide">Back</button>
 				<button id="show-fetch-filter" class="btn btn-primary glyphicon glyphicon-filter" data-toggle="collapse" data-target="#fetch-filter" aria-expanded="false" aria-controls="fetch-filter" title="Filters"></button>
 				<button id="show_cal" class="hidden-xs btn btn-primary glyphicon glyphicon-calendar" title="Calendar"></button>
@@ -125,9 +127,7 @@
 					<svg id="fillgauge_ind_SL" width="95%" height="100" onclick="show_event_names('IN-SL');"></svg>
 				</div>
 				<div class="col-md-6 col-xs-12 center">
-					<label for="global_search">Global Search</label>
-					<input id="global_search" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search">
-					<p class="small text-muted">You can use your regex skill here</p>
+					<p class="small text-muted">We can show some stats here - ideas are welcome</p>
 				</div>
 				<!--<div class="col-md-6 center hide" id='v-filter'>
 					<div class="col-md-4" id="v-filter-1"></div>

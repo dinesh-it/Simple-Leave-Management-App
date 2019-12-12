@@ -12,6 +12,8 @@ var admin_names = {
 	DINESH: 1
 };
 
+var show_fuel_gauge = false;
+
 var HolidayList = {
 	'2018-01-01':"New Year",
 	'2018-01-26':"Republic Day*",
