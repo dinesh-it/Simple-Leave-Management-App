@@ -284,6 +284,9 @@ function bind_events() {
         var selected = $(this).val();
         var msg = '';
         if (event_limits[selected]) {
+            if(!logged_in_user_data[selected]) {
+                logged_in_user_data[selected] = 0;
+            }
             var remain = event_limits[selected] - logged_in_user_data[selected];
             if (user_extra_allowance && user_extra_allowance[login_name] && user_extra_allowance[login_name][selected]) {
                 remain += user_extra_allowance[login_name][selected];
@@ -293,7 +296,7 @@ function bind_events() {
             } else if (remain > 0) {
                 msg = remain + ' leave';
             } else {
-                msg = "You don't have remaining " + selected + "'s";
+                msg = "You don't have " + selected + "'s";
             }
             msg += " remaining<sup>*</sup>";
             $('#add-event-days').attr('max', remain);
