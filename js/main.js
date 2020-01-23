@@ -9,6 +9,8 @@ var login_name = '';
 var calendar_iframe;
 var cumulative_data = {};
 var cal_all_events;
+var global_from_date;
+var global_to_date;
 var admin_login = false;
 var logged_in_user_data = {};
 var loging_data_computed = false;
@@ -646,6 +648,8 @@ function listEvents(from, to) {
     }).then(function(response) {
         var events = response.result.items;
         cal_all_events = events;
+        global_from_date = from_date_obj;
+        global_to_date = to_date_obj;
         process_all_events(events);
 
         $.each(remove_events, function(i, v) {
@@ -682,7 +686,7 @@ function updateLoginInfo(userProfile) {
             $('#monthly-report').removeClass('hide');
             console.log('Showing Monthly Report button for user: ', name);
             //if(name == 'VASUNDHAR') {
-            //	enable_v_filter();
+            //    enable_v_filter();
             //}
             return;
         }
@@ -740,6 +744,21 @@ function process_all_events(events) {
             var event = events[i];
             var start = get_dataTime(event.start);
             var end = get_dataTime(event.end);
+
+            if(start < global_from_date) {
+                start = global_from_date;
+            }
+            if(end > global_to_date) {
+                end = global_end_date;
+            }
+
+            if(!start.isBusinessDay()) {
+                start = start.nextBusinessDay();
+            }
+
+            if(start != end && !end.isBusinessDay()) {
+                end = end.prevBusinessDay();
+            }
 
             var summary = event.summary;
 
@@ -1331,9 +1350,16 @@ function populate_counts_table(filtered_data, cols) {
     row_str += '</tr></thead>';
     report_table.html(row_str);
 
+    var leaves_remain = {};
+
+    window.leaves_remain = function() {
+        console.log(leaves_remain);
+    }
+
     $.each(filtered_data, function(name, event_days) {
         row_str = '<tr>';
         row_str += '<td class="link">' + name + '</td>';
+        leaves_remain[name] = {};
         var td_class = 'link high';
         $.each(cols, function(i, event) {
             var tt_msg = event + " : " + name;
@@ -1351,6 +1377,7 @@ function populate_counts_table(filtered_data, cols) {
 
                     if (remain_days > 0) {
                         tt_msg += "\nRemaining: " + remain_days + ' leave(s)';
+                        leaves_remain[name][event] = remain_days;
                     } else if (remain_days < 0) {
                         tt_msg += "\nOverdue: " + (remain_days * -1) + ' leave(s)';
                         td_class += ' danger'
@@ -1415,24 +1442,24 @@ function create_event(data) {
         'timeZone': time_zone
     };
 
-	var start_str;
-	var end_str;
-	var desc = '';
+    var start_str;
+    var end_str;
+    var desc = '';
 
-	if (data.add_event_day == 'FULL') {
-		start_time.date = start_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
-		var to_date_obj = moment(data.to_date + ' 00:00', 'DD/MM/YYYY HH:mm').add(1, 'days');
-		end_time.date = end_str = to_date_obj.format('YYYY-MM-DD');
-	} else if (data.add_event_day == 'FH' || data.add_event_day == 'SH') {
-		start_time.date = start_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
-		end_time.date = end_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
-		if(data.add_event_day == 'FH') {
-			desc = '(First Half)';
-		}
-		else if(data.add_event_day == 'SH') {
-			desc = '(Second Half)';
-		}
-	}
+    if (data.add_event_day == 'FULL') {
+        start_time.date = start_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
+        var to_date_obj = moment(data.to_date + ' 00:00', 'DD/MM/YYYY HH:mm').add(1, 'days');
+        end_time.date = end_str = to_date_obj.format('YYYY-MM-DD');
+    } else if (data.add_event_day == 'FH' || data.add_event_day == 'SH') {
+        start_time.date = start_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
+        end_time.date = end_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
+        if(data.add_event_day == 'FH') {
+            desc = '(First Half)';
+        }
+        else if(data.add_event_day == 'SH') {
+            desc = '(Second Half)';
+        }
+    }
 
     var event = {
         'summary': data.new_event_title,
@@ -1543,13 +1570,13 @@ function getBiMonthlyTable(data) {
 }
 
 //function delete_event(event_id) {
-//	var request = gapi.client.calendar.events.delete({
-//		'calendarId': get_calendar_id(),
-//		'eventId': event_id
-//	});
-//	request.execute(function(event) {
-//		gapi_resp_process(event, function () { $('#add_event_modal').modal('hide'); });
-//	});
+//    var request = gapi.client.calendar.events.delete({
+//        'calendarId': get_calendar_id(),
+//        'eventId': event_id
+//    });
+//    request.execute(function(event) {
+//        gapi_resp_process(event, function () { $('#add_event_modal').modal('hide'); });
+//    });
 //}
 
 function gapi_resp_process(event, callback) {
@@ -1617,7 +1644,7 @@ function draw_fuel_graph() {
         search_param = url_params['search'];
     }
     if (search_param && search_param != '') {
-		url_params['search'] = null;
+        url_params['search'] = null;
         $('#global_search').val(search_param).trigger('keyup', '13');
     }
 
