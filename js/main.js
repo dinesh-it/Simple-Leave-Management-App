@@ -749,7 +749,7 @@ function process_all_events(events) {
                 start = global_from_date;
             }
             if(end > global_to_date) {
-                end = global_end_date;
+                end = global_to_date;
             }
 
             if(!start.isBusinessDay()) {
