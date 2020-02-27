@@ -760,7 +760,7 @@ function process_all_events(events) {
             }
 
             if(start != end && !end.isBusinessDay()) {
-                end = end.prevBusinessDay();
+                end = end.nextBusinessDay();
             }
 
             var summary = event.summary;
@@ -871,7 +871,7 @@ function getFormatedTime(date_time, days, end_time) {
     var day = date_time.format('ddd');
     var start_hr = date_time.format('H');
     var end_hr = end_time.format('H');
-    if (days < 1) {
+    if (days < 1 && days != 0) {
         time_str += "<br>" + date_time.format('h:mm a');
         time_str += " - " + end_time.format('h:mm a');
     }
@@ -880,7 +880,7 @@ function getFormatedTime(date_time, days, end_time) {
 
 function days_diff(date1, date2) {
     var diff = date2.businessDiff(date1, 'days');
-    if (diff == 0) {
+    if (diff == 0 && date1.isBefore(date2)) {
         diff = 1;
     }
     var date3 = date1.clone();
