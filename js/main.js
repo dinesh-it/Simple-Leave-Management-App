@@ -41,7 +41,7 @@ var help = "group_name_case_sensitive, group_first_name, login_name, refresh_dat
 
 $(document).ready(function() {
 
-    CompanyHolidays = _.keys(HolidayList);
+    CompanyHolidays = Object.keys(HolidayList);
     moment.locale('en-GB', {
         holidays: CompanyHolidays,
         holidayFormat: 'YYYY-MM-DD',
@@ -833,7 +833,7 @@ function process_all_events(events) {
 
     // Set auto complete suggestions for search bar
     $('#global_search , #all-events_filter input').autocomplete({
-        source: _.keys(auto_completes)
+        source: Object.keys(auto_completes)
     });
 
     // Draw tables
@@ -991,15 +991,9 @@ function update_chart() {
     });
 }
 
-function chart_data(x_axis, series, title_txt, sub_text) {
+function chart_data(x_axis, series, title_txt) {
     var chart = {
         type: 'column'
-    };
-    var title = {
-        text: title_txt
-    };
-    var subtitle = {
-        text: sub_text
     };
 
     var xAxis = {
@@ -1076,12 +1070,16 @@ function chart_data(x_axis, series, title_txt, sub_text) {
         enabled: true
     };
 
-    subtitle = _.defaults(subtitle, {
+	if(!title_txt) {
+		title_txt = 'Graphical Representation';
+	}
+
+    subtitle = {
         text: 'Data based on the applied filter'
-    });
-    title = _.defaults(title, {
-        text: 'Graphical Representation'
-    });
+    };
+    title = {
+        text: title_txt
+    };
 
     var json = {};
     json.chart = chart;
@@ -1099,8 +1097,8 @@ function chart_data(x_axis, series, title_txt, sub_text) {
 }
 
 function draw_graph(optimize_data, events_header) {
-    var x_axis = _.keys(optimize_data);
-    var y_axis = _.keys(events_header);
+    var x_axis = Object.keys(optimize_data);
+    var y_axis = Object.keys(events_header);
     var series = [];
     var data_y_t = {};
     if (x_axis.length < 2) {
@@ -1141,7 +1139,7 @@ function draw_monthly_chart(monthly_data) {
     var series = [];
     var data_y_t = {};
     var x_axis = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var x_axis_t = _.keys(monthly_data.types);
+    var x_axis_t = Object.keys(monthly_data.types);
 
     $.each(x_axis, function(i, month) {
         var data = monthly_data[month];
@@ -1177,7 +1175,7 @@ function draw_weekly_chart(weekly_data) {
     var series = [];
     var data_y_t = {};
     var x_axis = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    var x_axis_t = _.keys(weekly_data.types);
+    var x_axis_t = Object.keys(weekly_data.types);
     $.each(x_axis, function(i, day) {
         var data = weekly_data[day];
         if (!data) {
@@ -1245,7 +1243,7 @@ function calculate_counts(table) {
     });
     loging_data_computed = true;
 
-    populate_counts_table(optimize_data, _.keys(events_header));
+    populate_counts_table(optimize_data, Object.keys(events_header));
     progress_bar('', true);
 
     setTimeout(draw_fuel_graph, 100);
@@ -1545,7 +1543,7 @@ function getBiMonthlyTable(data) {
         $.each(names, function(name, events) {
             var row1 = $('<tr>');
             row1.append('<td><strong>' + name + '</strong></td>');
-            var keys = _.keys(events);
+            var keys = Object.keys(events);
             if (keys.length == 1 && keys[0] == '-') {
                 return true;
             }
@@ -1670,7 +1668,7 @@ function draw_fuel_graph() {
         if (!today_events[t] || t == '-' || t == 'HBD') {
             return true;
         }
-        var names = _.keys(today_events[t]);
+        var names = Object.keys(today_events[t]);
         var count = names.length;
         if (t.match(/^H/i)) {
             count = count / 2;
