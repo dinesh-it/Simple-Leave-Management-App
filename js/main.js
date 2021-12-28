@@ -880,7 +880,7 @@ function getFormatedTime(date_time, days, end_time) {
 
 function days_diff(date1, date2) {
     var diff = date2.businessDiff(date1, 'days');
-    if (diff == 0 && date1.isBefore(date2)) {
+	if (diff == 0 && ( date1.isBefore(date2) || date1.isSame(date2, 'day'))) {
         diff = 1;
     }
     var date3 = date1.clone();
@@ -1398,7 +1398,10 @@ function populate_counts_table(filtered_data, cols) {
             } else {
                 tt_msg += "\nTaken/Applied: 0";
                 if (event_limits[event]) {
-                    var remain_days = event_limits[event];
+					var remain_days = event_limits[event];
+					if (user_extra_allowance && user_extra_allowance[name] && user_extra_allowance[name][event]) {
+						remain_days += user_extra_allowance[name][event];
+					}
                     tt_msg += "\nRemaining: " + remain_days + ' leave(s)';
                 }
                 row_str += '<td class="' + td_class + '" data-toggle="tooltip" title="' + tt_msg + '">0</td>';
