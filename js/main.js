@@ -23,12 +23,26 @@ var today_date_dd = today.format('DD');
 var today_events = {};
 var last_session_validated = 0;
 
+// Config defaults
+var Type_Filter = ['PL', 'SL', 'ML', 'PTL', 'MTL', 'RL', 'WFH', 'CO', 'LOP', 'HBD', '-'];
+var remove_events = ['-', 'HBD', 'MTL', 'PTL', 'ML', 'RL', 'LOP'];
+var total_emps = 27;
+var event_limits = { 
+	PL: 18,
+	SL: 12
+};
+var admin_names = {};
+var show_fuel_gauge = false;
+var HolidayList = {};
+var company_name = "Dinesh";
+var user_extra_allowance = {};
+
 // Array of API discovery doc URLs for APIs used by the quickstart
-var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"];
+var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest", 'https://docs.googleapis.com/$discovery/rest?version=v1'];
 
 // Authorization scopes required by the API; multiple scopes can be
 // included, separated by spaces.
-var SCOPES = "https://www.googleapis.com/auth/calendar";
+var SCOPES = "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/documents.readonly";
 
 var authorizeButton;
 var signoutButton;
@@ -683,6 +697,7 @@ function updateLoginInfo(userProfile) {
     login_name = first_name;
     signoutButton.innerHTML = ' ' + login_name;
     $('#monthly-report').addClass('hide');
+	setConfigFromDrive();
     $.each(admin_names, function(name) {
         if (name == login_name.toUpperCase()) {
             admin_login = true;
@@ -1803,4 +1818,29 @@ function readCookie(name) {
 
 function eraseCookie(name) {
     createCookie(name, "", -1);
+}
+
+var doc_config;
+function setConfigFromDrive() {
+	gapi.client.docs.documents.get({
+		documentId: CONFIG_DOC_ID
+	}).then(function(response) {
+		var doc = response.result;
+		var drive_cnt = '';
+		doc.body.content.forEach(function(line) { if(!line.paragraph) { return; } drive_cnt += line.paragraph.elements[0].textRun.content; });
+		doc_config = drive_cnt;
+		var json_config = JSON.parse(drive_cnt);
+		Type_Filter = json_config.typeFilter;
+		remove_events = json_config.removeEvents;
+		total_emps = json_config.totalEmps;
+		event_limits = json_config.eventLimits;
+		admin_names = json_config.adminNames;
+		show_fuel_gauge = json_config.showFuelGauge;
+		HolidayList = json_config.holidayList;
+		company_name = json_config.companyName;
+		user_extra_allowance = json_config.userExtraAllowance;
+	}, function(response) {
+		console.log('Error: ' + response.result.error.message);
+		alert("Your workspace does not seems to have this app configured");
+	});
 }
