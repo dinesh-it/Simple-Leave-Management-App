@@ -54,13 +54,8 @@ var group_first_name = 1;
 var help = "group_name_case_sensitive, group_first_name, login_name, refresh_data().";
 
 $(document).ready(function() {
-
-    CompanyHolidays = Object.keys(HolidayList);
-    moment.locale('en-GB', {
-        holidays: CompanyHolidays,
-        holidayFormat: 'YYYY-MM-DD',
-        workingWeekdays: [1, 2, 3, 4, 5]
-    });
+    authorizeButton = document.getElementById("authorize-button");
+    signoutButton = document.getElementById("signout-button");
 
     $(".filter-box").hide();
     $(window).on("focus", function(event) {
@@ -70,21 +65,31 @@ $(document).ready(function() {
         return false;
     });
 
+    initialize();
+
+    bind_events();
+
+});
+
+function init() {
+
+    $('.company_name').text(company_name);
+
+    CompanyHolidays = Object.keys(HolidayList);
+    moment.locale('en-GB', {
+        holidays: CompanyHolidays,
+        holidayFormat: 'YYYY-MM-DD',
+        workingWeekdays: [1, 2, 3, 4, 5]
+    });
+    init_holiday_list();
+	console.log("Company holidays initialized");
+	print_fun_info();
+
     $.each(Type_Filter, function(i, v) {
         temp_types.push(v);
         temp_types.push('H' + v);
     });
-
-    $('.company_name').text(company_name);
-
-    authorizeButton = document.getElementById("authorize-button");
-    signoutButton = document.getElementById("signout-button");
-
-    init_holiday_list();
-    initialize();
-
-    bind_events();
-});
+}
 
 function init_holiday_list() {
     var leave_list_table = $('#holidays_list tbody');
@@ -522,14 +527,14 @@ function initClient() {
     }).then(function() {
         // Listen for sign-in state changes.
         progress_bar("Signing in...");
-        gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+		gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
 
         // Handle the initial sign-in state.
         updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
         authorizeButton.onclick = handleAuthClick;
         signoutButton.onclick = handleSignoutClick;
         updateLoginInfo(gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile());
-    });
+	});
 }
 
 /**
@@ -537,6 +542,10 @@ function initClient() {
  *  appropriately. After a sign-in, the API is called.
  */
 function updateSigninStatus(isSignedIn) {
+	setConfigFromDrive(isSignedIn);
+}
+
+function loadCalendars(isSignedIn) {
     last_session_validated = moment();
     if (isSignedIn) {
         progress_bar("SignIn Success!");
@@ -562,16 +571,21 @@ function updateSigninStatus(isSignedIn) {
                     opt.attr('selected', 'selected');
                 }
 
-                console.log(sel_cal_id, i);
+				if(!sel_cal_id && cal.summary.match(/vacation/i)) {
+					console.log("Selecting " + cal.summary + " as the default calendar");
+                    opt.attr('selected', 'selected');
+					sel_cal_id = cal.id;
+				}
+
                 if (!sel_cal_id && i == 0) {
                     opt.attr('selected', 'selected');
+					console.log("Selecting " + cal.summary + " as the default calendar");
                 }
                 $('#cal_list').append(opt);
             });
             listEvents(from, to);
             calendar_iframe = '<iframe src="https://calendar.google.com/calendar/embed?src=' + encodeURI(get_calendar_id()) + '&ctz=Asia/Calcutta" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>';
             $('#calendar_iframe').html(calendar_iframe);
-            print_fun_info();
         });
 
     } else {
@@ -678,11 +692,11 @@ function listEvents(from, to) {
 function get_calendar_id() {
     var cookie_cal_id = readCookie('sci');
     if (cookie_cal_id) {
-        console.log("Cookie: ", cookie_cal_id);
+        //console.log("Cookie: ", cookie_cal_id);
         return cookie_cal_id;
     }
 
-    console.log('selected: ', $('#cal_list').val());
+    //console.log('selected: ', $('#cal_list').val());
     return $('#cal_list').val();
 }
 
@@ -697,7 +711,6 @@ function updateLoginInfo(userProfile) {
     login_name = first_name;
     signoutButton.innerHTML = ' ' + login_name;
     $('#monthly-report').addClass('hide');
-	setConfigFromDrive();
     $.each(admin_names, function(name) {
         if (name == login_name.toUpperCase()) {
             admin_login = true;
@@ -1821,7 +1834,13 @@ function eraseCookie(name) {
 }
 
 var doc_config;
-function setConfigFromDrive() {
+function setConfigFromDrive(isSignedIn) {
+
+	if(!isSignedIn) {
+		loadCalendars(isSignedIn);
+		return;
+	}
+
 	gapi.client.docs.documents.get({
 		documentId: CONFIG_DOC_ID
 	}).then(function(response) {
@@ -1839,8 +1858,12 @@ function setConfigFromDrive() {
 		HolidayList = json_config.holidayList;
 		company_name = json_config.companyName;
 		user_extra_allowance = json_config.userExtraAllowance;
+		console.log("Config loaded");
+		init();
+		loadCalendars(isSignedIn);
 	}, function(response) {
 		console.log('Error: ' + response.result.error.message);
-		alert("Your workspace does not seems to have this app configured");
+		alert("Your workspace does not seem to have this app configured");
 	});
+	console.log("setConfig completed");
 }
