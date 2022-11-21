@@ -964,7 +964,9 @@ function split_summary(summary) {
         cols[1] = cols_t.toString().trim();
     }
 
-    if (group_first_name && cols[1].match(' ')) {
+    if (group_first_name && cols[1].match(' ') && !cols[1].toLowerCase().match('shefali')) {
+		// For shefali it should no consider only the first name
+		console.log(cols[1]);
         cols[1] = cols[1].split(' ')[0];
     }
 
