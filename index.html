@@ -23,6 +23,15 @@
 	<link rel="stylesheet" href="./css/plugins/bootstrap.min.css">
     <link rel='stylesheet' type='text/css' href='./css/app.css?v=1.1'>
 
+	<!-- When this page is loaded as the Microsoft login popup redirect, hand the response back to the app window -->
+	<script src="./js/plugins/msal-redirect-bridge.min.js?v=5.22.0"></script>
+	<script>
+		var IS_AUTH_RESPONSE = /(^|&)state=/.test(window.location.hash.replace(/^#/, '')) || /(^|&)state=/.test(window.location.search.replace(/^\?/, ''));
+		if (IS_AUTH_RESPONSE) {
+			msalRedirectBridge.broadcastResponseToMainFrame().catch(function(err) { console.error(err); });
+		}
+	</script>
+
     <script src="./js/plugins/jquery-1.12.4.min.js"></script>
 	<script src="./js/plugins/jquery-ui.min.js"></script>
 	<script src="./js/plugins/bootstrap.min.js"></script>
@@ -34,10 +43,13 @@
     <script src='./js/plugins/moment-with-locales.min.js' type='text/javascript'></script>
 	<script src='./js/plugins/moment-business-days.js' type='text/javascript'></script>
 	<script src='./js/plugins/excellentexport.min.js?v=1.0' type='text/javascript'></script>
+	<script src='./js/plugins/msal-browser.min.js?v=5.22.0' type='text/javascript'></script>
 
-	<script src='./js/data.js?v=1.9' type='text/javascript'></script>
+	<script src='./js/data.js?v=2.0' type='text/javascript'></script>
 	<script src='./js/util.js?v=1.0' type='text/javascript'></script>
-	<script src='./js/main.js?v=2.1' type='text/javascript'></script>
+	<script src='./js/msgraph.js?v=1.0' type='text/javascript'></script>
+	<script src='./js/slack.js?v=1.0' type='text/javascript'></script>
+	<script src='./js/main.js?v=2.2' type='text/javascript'></script>
 </head>
 
 <body>
@@ -52,7 +64,7 @@
 				<input id="global_search" class="form-control form-control-sm ml-3 w-75 glyphicon" type="text" placeholder="&#xe003 search global" aria-label="Search" title="Global search with regular expression support">
 				<button id="filter-reset" class="btn btn-danger hide">Back</button>
 				<button id="show-fetch-filter" class="btn btn-primary glyphicon glyphicon-filter" data-toggle="collapse" data-target="#fetch-filter" aria-expanded="false" aria-controls="fetch-filter" title="Filters"></button>
-				<button id="show_cal" class="hidden-xs btn btn-primary glyphicon glyphicon-calendar" title="Calendar"></button>
+				<button id="show_cal" class="hidden-xs btn btn-primary glyphicon glyphicon-calendar hide" title="Open calendar"></button>
 				<button class="btn btn-primary glyphicon glyphicon-signal" id="show-graph" title="Charts"></button>
 				<button class="btn btn-primary glyphicon glyphicon-gift" data-toggle="modal" data-target="#company_birthdays" title="Birthdays"></button>
 				<button class="btn btn-primary glyphicon glyphicon-heart-empty" data-toggle="modal" data-target="#company_holidays" title="Holidays"></button>
@@ -68,7 +80,7 @@
 	</div>
 	<div id="sign-in-info" class="filter-container">
 		<center>
-			<h3>Please <a onclick="handleAuthClick();" href="#">Login</a> with your <span class="compay_name">google workspace</span> account to continue...!</h3>
+			<h3>Please <a onclick="handleAuthClick();" href="#">Login</a> with your <span class="compay_name">Microsoft 365 / Teams</span> account to continue...!</h3>
 		</center>
 	</div>
 
@@ -138,10 +150,6 @@
 	<div id="chart-container" class="collapse hidden-xs col-md-12 valid-session"></div>
 	<div id="chart-container-monthly" class="collapse col-md-8 col-xs-12 valid-session"></div>
 	<div id="chart-container-weekly" class="collapse col-md-4 col-xs-12 valid-session"></div>
-	<div id="calender_view" class="collapse hidden-xs">
-		<center id="calendar_iframe">
-		</center>
-	</div>
 	<div class="valid-session">
 	<div class="col-md-12 valid-session">
 	<div class="col-md-7 col-xs-12 div-bg valid-session">
@@ -438,8 +446,6 @@
 		</div>
 	</div>
 
-    <script async defer src="https://apis.google.com/js/api.js" onload="this.onload=function(){};handleClientLoad()" onreadystatechange="if (this.readyState === 'complete') this.onload()">
-    </script>
 </body>
 
 </html>

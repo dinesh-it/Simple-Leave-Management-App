@@ -6,7 +6,6 @@ var temp_types = [];
 var all_events_report;
 var count_table_timer;
 var login_name = '';
-var calendar_iframe;
 var cumulative_data = {};
 var cal_all_events;
 var global_from_date;
@@ -36,13 +35,11 @@ var show_fuel_gauge = false;
 var HolidayList = {};
 var company_name = "Dinesh";
 var user_extra_allowance = {};
+var slack_webhook_url = '';
+var calendar_link = '';
 
-// Array of API discovery doc URLs for APIs used by the quickstart
-var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest", 'https://docs.googleapis.com/$discovery/rest?version=v1'];
-
-// Authorization scopes required by the API; multiple scopes can be
-// included, separated by spaces.
-var SCOPES = "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/documents.readonly";
+// Calendars listed for the signed in user (Microsoft Graph calendar resources)
+var all_calendars = [];
 
 var authorizeButton;
 var signoutButton;
@@ -54,6 +51,11 @@ var group_first_name = 1;
 var help = "group_name_case_sensitive, group_first_name, login_name, refresh_data().";
 
 $(document).ready(function() {
+    // This page is the MSAL redirect target, inside the login popup only the bridge runs
+    if (IS_AUTH_RESPONSE) {
+        return;
+    }
+
     authorizeButton = document.getElementById("authorize-button");
     signoutButton = document.getElementById("signout-button");
 
@@ -69,6 +71,7 @@ $(document).ready(function() {
 
     bind_events();
 
+    handleClientLoad();
 });
 
 function init() {
@@ -218,12 +221,8 @@ function bind_events() {
     });
 
     $('#show_cal').on('click', function() {
-        var cal_view = $('#calender_view');
-        if (!cal_view.hasClass('in')) {
-            cal_view.removeClass('hide');
-            cal_view.collapse('show');
-        } else {
-            cal_view.collapse('hide');
+        if (calendar_link) {
+            window.open(calendar_link, '_blank', 'noopener');
         }
     });
 
@@ -508,33 +507,20 @@ function print_fun_info() {
 }
 
 /**
- *  On load, called to load the auth2 library and API client library.
+ *  On load, initialize MSAL and restore a cached Microsoft session if any.
  */
 function handleClientLoad() {
-    gapi.load('client:auth2', initClient);
-}
-
-/**
-Initializes the API client library and sets up sign-in state
-*  listeners.
-*/
-function initClient() {
     progress_bar("Initializing...");
-    gapi.client.init({
-        discoveryDocs: DISCOVERY_DOCS,
-        clientId: CLIENT_ID,
-        scope: SCOPES
-    }).then(function() {
-        // Listen for sign-in state changes.
+    authorizeButton.onclick = handleAuthClick;
+    signoutButton.onclick = handleSignoutClick;
+    msal_init().then(function(account) {
         progress_bar("Signing in...");
-		gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
-        // Handle the initial sign-in state.
-        updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-        authorizeButton.onclick = handleAuthClick;
-        signoutButton.onclick = handleSignoutClick;
-        updateLoginInfo(gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile());
-	});
+        updateSigninStatus(!!account);
+    }, function(err) {
+        console.log('MSAL init failed: ', err);
+        m_alert('ERROR: Failed to initialize Microsoft sign in!\n' + err.message);
+        updateSigninStatus(false);
+    });
 }
 
 /**
@@ -549,7 +535,6 @@ function loadCalendars(isSignedIn) {
     last_session_validated = moment();
     if (isSignedIn) {
         progress_bar("SignIn Success!");
-        updateLoginInfo(gapi.auth2.getAuthInstance().currentUser.get().getBasicProfile());
         authorizeButton.style.display = 'none';
         signoutButton.style.display = 'inline';
         var params = getUrlVars();
@@ -558,34 +543,50 @@ function loadCalendars(isSignedIn) {
         $('.valid-session').show();
         $('#sign-in-info').hide();
         $('.filter-box').show();
+        render_calendar_link();
 
         $('#cal_list').html('');
         var sel_cal_id = get_calendar_id();
-        var cal_list_req = gapi.client.calendar.calendarList.list();
-        progress_bar("Getting Calendar list");
-        cal_list_req.execute(function(resp) {
-            var calendars = resp.items;
+
+        // Login name is needed before events are processed (own leave counts)
+        graph_get('/me?$select=givenName,displayName').then(updateLoginInfo, function(err) {
+            console.log('Failed to get user profile: ', err);
+        }).then(function() {
+            progress_bar("Getting Calendar list");
+            return graph_get_all('/me/calendars?$select=id,name,canEdit');
+        }).then(function(calendars) {
+            all_calendars = calendars;
+
+            // Forget a remembered calendar that is no longer available (e.g. an old Google calendar id)
+            var known = $.grep(calendars, function(cal) { return cal.id == sel_cal_id; });
+            if (sel_cal_id && !known.length) {
+                eraseCookie('sci');
+                sel_cal_id = null;
+            }
+
             $.each(calendars, function(i, cal) {
-                var opt = $('<option value="' + cal.id + '">' + cal.summary + '</option>');
+                var opt = $('<option>').val(cal.id).text(cal.name);
                 if (sel_cal_id && sel_cal_id == cal.id) {
                     opt.attr('selected', 'selected');
                 }
 
-				if(!sel_cal_id && cal.summary.match(/vacation/i)) {
-					console.log("Selecting " + cal.summary + " as the default calendar");
+				if(!sel_cal_id && cal.name.match(/vacation/i)) {
+					console.log("Selecting " + cal.name + " as the default calendar");
                     opt.attr('selected', 'selected');
 					sel_cal_id = cal.id;
 				}
 
                 if (!sel_cal_id && i == 0) {
                     opt.attr('selected', 'selected');
-					console.log("Selecting " + cal.summary + " as the default calendar");
+					console.log("Selecting " + cal.name + " as the default calendar");
                 }
                 $('#cal_list').append(opt);
             });
             listEvents(from, to);
-            calendar_iframe = '<iframe src="https://calendar.google.com/calendar/embed?src=' + encodeURI(get_calendar_id()) + '&ctz=Asia/Calcutta" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>';
-            $('#calendar_iframe').html(calendar_iframe);
+        }, function(err) {
+            console.log('Failed to get calendar list: ', err);
+            progress_bar("ERROR: Failed to get calendar list!");
+            m_alert('ERROR: Failed to get calendar list!\n' + err.message);
         });
 
     } else {
@@ -595,7 +596,6 @@ function loadCalendars(isSignedIn) {
         $('.valid-session').hide();
         $('#sign-in-info').show();
         $('.filter-box').hide();
-        $('#calendar_iframe').html('');
         progress_bar("", true);
         setTimeout(function() {
             $('.processing').hide()
@@ -604,16 +604,37 @@ function loadCalendars(isSignedIn) {
     progress_bar('', true);
 }
 
-function validate_session() {
+function render_calendar_link() {
+    if (calendar_link) {
+        $('#show_cal').removeClass('hide');
+    } else {
+        $('#show_cal').addClass('hide');
+    }
+}
+
+function session_expired() {
+    m_alert("Session expired!");
+    updateSigninStatus(false);
+}
+
+// Returns false when nobody is signed in. Otherwise checks, silently, that a token can
+// still be obtained and calls on_valid only when it can.
+function validate_session(on_valid) {
     console.log("Validating Session!");
     last_session_validated = moment();
-    if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
-        m_alert("Session expired!");
-        updateSigninStatus(false);
+    if (!msal_account()) {
+        session_expired();
         return false;
-    } else {
-        return true;
     }
+    get_token(false).then(function() {
+        if (on_valid) {
+            on_valid();
+        }
+    }, function(err) {
+        console.log('Silent token renewal failed: ', err);
+        session_expired();
+    });
+    return true;
 }
 
 /**
@@ -621,8 +642,16 @@ function validate_session() {
  */
 function handleAuthClick(event) {
     progress_bar('', true);
-    gapi.auth2.getAuthInstance().signIn();
     $(".processing").show();
+    msal_login().then(function() {
+        updateSigninStatus(true);
+    }, function(err) {
+        console.log('Login failed: ', err);
+        $(".processing").hide();
+        m_alert('Login cancelled or failed!\n' + err.message);
+        updateSigninStatus(false);
+    });
+    return false;
 }
 
 /**
@@ -630,15 +659,17 @@ function handleAuthClick(event) {
  */
 function handleSignoutClick(event) {
     progress_bar("Logging Out!");
-    gapi.auth2.getAuthInstance().signOut();
-    location.reload();
-    progress_bar('', true);
+    msal_logout().then(function() {
+        location.reload();
+    }, function(err) {
+        console.log('Logout failed: ', err);
+        location.reload();
+    });
 }
 
 /**
- * Print the summary and start datetime/date of the next ten events in
- * the authorized user's calendar. If no events are found an
- * appropriate message is printed.
+ * Fetch all events of the selected calendar between from and to (MM/DD/YYYY),
+ * defaults to the current year.
  */
 function listEvents(from, to) {
 
@@ -668,16 +699,15 @@ function listEvents(from, to) {
     var from_date = from_date_obj.format();
     var to_date = to_date_obj.format();
 
-    var status = gapi.client.calendar.events.list({
-        'calendarId': calendar_id,
-        'timeMin': from_date,
-        'timeMax': to_date,
-        'showDeleted': false,
-        'singleEvents': true,
-        'maxResults': 100000,
-        'orderBy': 'startTime'
-    }).then(function(response) {
-        var events = response.result.items;
+    var url = '/me/calendars/' + encodeURIComponent(calendar_id) + '/calendarView' +
+        '?startDateTime=' + encodeURIComponent(from_date) +
+        '&endDateTime=' + encodeURIComponent(to_date) +
+        '&$select=subject,start,end,isAllDay,isCancelled' +
+        '&$orderby=start/dateTime' +
+        '&$top=500';
+
+    graph_get_all(url).then(function(items) {
+        var events = $.map($.grep(items, function(ev) { return !ev.isCancelled; }), to_legacy_event);
         cal_all_events = events;
         global_from_date = from_date_obj;
         global_to_date = to_date_obj;
@@ -686,6 +716,10 @@ function listEvents(from, to) {
         $.each(remove_events, function(i, v) {
             $("#type_" + v).removeAttr('checked').trigger('change');
         });
+    }, function(err) {
+        console.log('Failed to get events: ', err);
+        progress_bar("ERROR: Failed to get events!");
+        m_alert('ERROR: Failed to get events!\n' + err.message);
     });
 }
 
@@ -700,13 +734,12 @@ function get_calendar_id() {
     return $('#cal_list').val();
 }
 
-// We will get logged in User info here
-// https://developers.google.com/identity/sign-in/web/reference#googleusergetbasicprofile
+// Logged in user info from Microsoft Graph /me
 function updateLoginInfo(userProfile) {
     if (!userProfile) {
         return;
     }
-    var first_name = userProfile.getGivenName();
+    var first_name = userProfile.givenName || (userProfile.displayName || '').split(' ')[0];
     console.log("Found Logged in User Name: ", first_name);
     login_name = first_name;
     signoutButton.innerHTML = ' ' + login_name;
@@ -763,7 +796,6 @@ function getUrlVars() {
 
 // TODO: We should find a way to stop processing same data more than once
 function process_all_events(events) {
-    var cal_url = 'https://www.google.com/calendar/event?eid='
     var col_0_vals = {};
     var all_rows = [];
     var birthdays = {};
@@ -1464,49 +1496,64 @@ function set_today_event(row) {
 }
 
 function create_event(data) {
+    validate_session(function() {
+        submit_event(data);
+    });
+}
 
-    if (!validate_session()) {
-        return false;
+function submit_event(data) {
+
+    var calendar_id = get_calendar_id();
+    var calendar = $.grep(all_calendars, function(cal) { return cal.id == calendar_id; })[0];
+    if (calendar && calendar.canEdit === false) {
+        m_alert('You do not have permission to add events to the calendar "' + calendar.name + '"');
+        return;
     }
-    var time_zone = 'Asia/Kolkata';
-    var start_time = {
-        'timeZone': time_zone
-    };
-    var end_time = {
-        'timeZone': time_zone
-    };
 
-    var start_str;
-    var end_str;
+    var from_date = moment(data.from_date, 'DD/MM/YYYY');
+    var last_date;
     var desc = '';
+    var part = '';
 
-    if (data.add_event_day == 'FULL') {
-        start_time.date = start_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
-        var to_date_obj = moment(data.to_date + ' 00:00', 'DD/MM/YYYY HH:mm').add(1, 'days');
-        end_time.date = end_str = to_date_obj.format('YYYY-MM-DD');
-    } else if (data.add_event_day == 'FH' || data.add_event_day == 'SH') {
-        start_time.date = start_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
-        end_time.date = end_str = moment(data.from_date + ' 00:00', 'DD/MM/YYYY HH:mm').format('YYYY-MM-DD');
+    if (data.add_event_day == 'FH' || data.add_event_day == 'SH') {
+        last_date = from_date.clone();
         if(data.add_event_day == 'FH') {
-            desc = '(First Half)';
+            part = 'First Half';
         }
         else if(data.add_event_day == 'SH') {
-            desc = '(Second Half)';
+            part = 'Second Half';
         }
+        desc = '(' + part + ')';
+    } else {
+        last_date = moment(data.to_date, 'DD/MM/YYYY');
     }
 
+    var start_str = from_date.format('YYYY-MM-DD');
+    var end_str = last_date.format('YYYY-MM-DD');
+    // All day events end at midnight after the last day
+    var end_exclusive = last_date.clone().add(1, 'days').format('YYYY-MM-DD');
+
     var event = {
-        'summary': data.new_event_title,
-        'location': data.location,
-        'description': desc + ' ' + data.description,
-        'reminders': {
-            'useDefault': true
+        'subject': data.new_event_title,
+        'isAllDay': true,
+        'location': {
+            'displayName': data.location || ''
         },
-        'start': start_time,
-        'end': end_time
+        'body': {
+            'contentType': 'text',
+            'content': $.trim(desc + ' ' + (data.description || ''))
+        },
+        'start': {
+            'dateTime': start_str + 'T00:00:00',
+            'timeZone': GRAPH_TIME_ZONE
+        },
+        'end': {
+            'dateTime': end_exclusive + 'T00:00:00',
+            'timeZone': GRAPH_TIME_ZONE
+        }
     };
 
-    var details = "Title:  " + event.summary + "\n";
+    var details = "Title:  " + event.subject + "\n";
     details += "From:  " + start_str + "\n";
     details += "To:  " + end_str + "\n\n";
     details += " I will be creating above event.";
@@ -1517,16 +1564,27 @@ function create_event(data) {
     }
 
     progress_bar("Creating event...");
-    var request = gapi.client.calendar.events.insert({
-        'calendarId': get_calendar_id(),
-        'resource': event
-    });
-
-    request.execute(function(event) {
-        gapi_resp_process(event, function() {
-            $('#add_event_modal').modal('hide');
-        });
+    graph_post('/me/calendars/' + encodeURIComponent(calendar_id) + '/events', event, true).then(function(created) {
         progress_bar('', true);
+        graph_resp_process(created, function() {
+            $('#add_event_modal').modal('hide');
+            notify_slack_event_created({
+                title: event.subject,
+                from: start_str,
+                to: end_str,
+                part: part,
+                description: $.trim(data.description || ''),
+                calendar: calendar ? calendar.name : $('#cal_list option:selected').text(),
+                created_by: login_name
+            });
+        });
+    }, function(err) {
+        progress_bar('', true);
+        graph_resp_process({
+            error: {
+                message: err.message
+            }
+        });
     });
 }
 
@@ -1603,26 +1661,16 @@ function getBiMonthlyTable(data) {
     return table;
 }
 
-//function delete_event(event_id) {
-//    var request = gapi.client.calendar.events.delete({
-//        'calendarId': get_calendar_id(),
-//        'eventId': event_id
-//    });
-//    request.execute(function(event) {
-//        gapi_resp_process(event, function () { $('#add_event_modal').modal('hide'); });
-//    });
-//}
+function graph_resp_process(event, callback) {
 
-function gapi_resp_process(event, callback) {
-
-    console.log('GAPI Response: ', event);
+    console.log('Graph Response: ', event);
     if (event.error) {
         var msg = 'ERROR: ' + event.error.message;
         if (login_name != 'Dinesh') {
             msg += "\nSeems bug? Inform to Dinesh D!";
         }
         m_alert(msg);
-    } else if (event.status && event.status == 'confirmed') {
+    } else if (event.id) {
         listEvents();
         if (callback) {
             callback();
@@ -1843,29 +1891,51 @@ function setConfigFromDrive(isSignedIn) {
 		return;
 	}
 
-	gapi.client.docs.documents.get({
-		documentId: CONFIG_DOC_ID
-	}).then(function(response) {
-		var doc = response.result;
-		var drive_cnt = '';
-		doc.body.content.forEach(function(line) { if(!line.paragraph) { return; } drive_cnt += line.paragraph.elements[0].textRun.content; });
-		doc_config = drive_cnt;
-		var json_config = JSON.parse(drive_cnt);
-		Type_Filter = json_config.typeFilter;
-		remove_events = json_config.removeEvents;
-		total_emps = json_config.totalEmps;
-		event_limits = json_config.eventLimits;
-		admin_names = json_config.adminNames;
-		show_fuel_gauge = json_config.showFuelGauge;
-		HolidayList = json_config.holidayList;
-		company_name = json_config.companyName;
-		user_extra_allowance = json_config.userExtraAllowance;
-		console.log("Config loaded");
-		init();
-		loadCalendars(isSignedIn);
-	}, function(response) {
-		console.log('Error: ' + response.result.error.message);
+	progress_bar("Loading workspace config...");
+	graph_get('/shares/' + graph_share_id(CONFIG_SHARE_URL) + '/driveItem').then(function(item) {
+		var download_url = item['@microsoft.graph.downloadUrl'];
+		if (!download_url) {
+			throw new Error('No download URL for the config file');
+		}
+		return fetch(download_url);
+	}).then(function(resp) {
+		if (!resp.ok) {
+			throw new Error(resp.status + ' ' + resp.statusText);
+		}
+		return resp.text();
+	}).then(function(text) {
+		apply_workspace_config(text, isSignedIn);
+	}, function(err) {
+		console.log('Error: ', err);
+		progress_bar('', true);
 		alert("Your workspace does not seem to have this app configured");
 	});
-	console.log("setConfig completed");
+	console.log("setConfig requested");
+}
+
+function apply_workspace_config(text, isSignedIn) {
+	var json_config;
+	try {
+		json_config = JSON.parse(text.replace(/^﻿/, ''));
+	} catch (e) {
+		console.log('Invalid workspace config: ', e);
+		progress_bar('', true);
+		alert("Your workspace config is invalid: " + e.message);
+		return;
+	}
+	doc_config = text;
+	Type_Filter = json_config.typeFilter;
+	remove_events = json_config.removeEvents;
+	total_emps = json_config.totalEmps;
+	event_limits = json_config.eventLimits;
+	admin_names = json_config.adminNames;
+	show_fuel_gauge = json_config.showFuelGauge;
+	HolidayList = json_config.holidayList;
+	company_name = json_config.companyName;
+	user_extra_allowance = json_config.userExtraAllowance;
+	slack_webhook_url = json_config.slackWebhookUrl || '';
+	calendar_link = json_config.calendarLink || '';
+	console.log("Config loaded");
+	init();
+	loadCalendars(isSignedIn);
 }
