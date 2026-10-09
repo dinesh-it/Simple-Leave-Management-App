@@ -197,19 +197,59 @@ export function drawBarChart(canvas, emptyEl, data, horizontal, labels) {
     }
 }
 
-// Leave days per month (Jan..Dec), one dataset per leave type; WFH and the other types count as listed
+// Chart series: these types get their own colour, in this fixed order (validated colour neighbours);
+// every other leave type (ML, PTL, MTL, RL, LOP, ...) is grouped as "Other"
+export const CHART_SERIES = ['PL', 'SL', 'OPH', 'CO', 'WFH', 'Other'];
+
+export function chartGroup(type) {
+    const base = leave.baseType(type);
+    return CHART_SERIES.indexOf(base) >= 0 && base != 'Other' ? base : 'Other';
+}
+
+// {key: {type: days}} -> {key: {group: days}}
+function grouped(byKey) {
+    const out = {};
+    Object.keys(byKey).forEach((key) => {
+        out[key] = {};
+        Object.keys(byKey[key]).forEach((type) => {
+            const g = chartGroup(type);
+            out[key][g] = (out[key][g] || 0) + byKey[key][type];
+        });
+    });
+    return out;
+}
+
+function datasets(groups, valueOf) {
+    // A 2px line in the card colour between stacked segments keeps neighbouring colours apart
+    const gap = cssVar('--bs-body-bg');
+    return CHART_SERIES.filter((g) => groups.has(g)).map((g) => ({
+        label: g,
+        backgroundColor: typeColor(g),
+        borderColor: gap,
+        borderWidth: { top: 2 },
+        data: valueOf(g)
+    }));
+}
+
+// Leave days per month (Jan..Dec) per chart series
 export function monthChartData(config, rows) {
     const leaveRows = rows.filter((r) => leave.isLeaveType(r.type));
-    const types = typeOrder(config, Array.from(new Set(leaveRows.map((r) => leave.baseType(r.type)))));
-    const totals = leave.monthlyTotals(leaveRows);
+    const totals = grouped(leave.monthlyTotals(leaveRows));
+    const groups = new Set(leaveRows.map((r) => chartGroup(r.type)));
     return {
         labels: moment.monthsShort(),
-        datasets: types.map((t) => ({
-            label: t,
-            backgroundColor: typeColor(t),
-            data: moment.monthsShort().map((m, i) => (totals[i] && totals[i][t]) || 0)
-        }))
+        datasets: datasets(groups, (g) => moment.monthsShort().map((m, i) => (totals[i] && totals[i][g]) || 0))
     };
+}
+
+// Leave days per person per chart series, the person with most days first
+export function personChartData(rows) {
+    const leaveRows = rows.filter((r) => leave.isLeaveType(r.type));
+    const summary = grouped(leave.personSummary(leaveRows));
+    const total = (n) => Object.values(summary[n]).reduce((a, b) => a + b, 0);
+    const names = Object.keys(summary).sort((a, b) => total(b) - total(a) || a.localeCompare(b));
+    const groups = new Set(leaveRows.map((r) => chartGroup(r.type)));
+    return { labels: names, datasets: datasets(groups, (g) => names.map((n) => summary[n][g] || 0)) };
 }
 
 // Charts read the theme colours when drawn, redraw them when the system light / dark setting changes

@@ -51,7 +51,8 @@ Only signed in users who can open the file can use the app.
     "userExtraAllowance": { "Dinesh": { "PL": 2 } },
     "slackWebhookUrl": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
     "calendarName": "Shared Vacation (IN)",
-    "calendarLink": "https://outlook.office.com/calendar/view/month"
+    "calendarLink": "https://outlook.office.com/calendar/view/month",
+    "birthdayCalendarName": "Shared India"
 }
 ```
 
@@ -67,6 +68,10 @@ Only signed in users who can open the file can use the app.
 * `calendarName` (optional): display name of the Microsoft 365 group whose calendar the app reads and writes, default `Shared Vacation (IN)`.
 * `calendarGroupId` (optional): object id of that group, skips the lookup by name.
 * `calendarLink` (optional): URL opened by the calendar button (Outlook / Teams calendar), the button is hidden without it.
+* `birthdayCalendarName` (optional): display name of the Microsoft 365 group whose calendar has the birthdays,
+  default `Shared India`. Birthday events are titled `HBD: Name` (yearly recurring or one-off). Users must be members
+  of that group to see the Birthdays list; the rest of the app works without it.
+* `birthdayCalendarGroupId` (optional): object id of that group, skips the lookup by name.
 
 Notes on Slack:
 * Only events created from the app's Add Event form are posted, not events added directly in Outlook / Teams.
@@ -87,7 +92,7 @@ Notes on Slack:
   * the Excel monthly report
 
   For non admins the Team view is not built at all, and the app keeps no other people's events in the browser.
-* Company holidays and birthdays (`HBD: Name` events) are shown to everyone.
+* Company holidays and birthdays (`HBD: Name` events in the `birthdayCalendarName` calendar, default `Shared India`) are shown to everyone.
 * An event belongs to a user when its title is `TYPE: <first name>` (e.g. `PL: Dinesh`, `HSL: Dinesh` for half a day),
   matched against the first name of the user's Microsoft 365 profile, ignoring case. Non admins can only add leave
   under their own name, admins can change the title to add leave for someone else.

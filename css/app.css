@@ -1,61 +1,102 @@
 /* App styles on top of Bootstrap 5.3. Light and dark follow data-bs-theme (set from the system setting). */
 
 :root {
-	--app-bg: #f4f6fa;
-	/* Leave type colours (badges and charts) */
-	--type-PL: #2563eb;
-	--type-SL: #dc2626;
-	--type-OPH: #0891b2;
-	--type-WFH: #0d9488;
-	--type-ML: #db2777;
-	--type-PTL: #7c3aed;
-	--type-MTL: #c026d3;
-	--type-CO: #ca8a04;
-	--type-RL: #ea580c;
-	--type-LOP: #475569;
-	--type-HBD: #f59e0b;
-	--type-other: #94a3b8;
-	/* Row and chip highlights */
-	--hl-today: #d7f5dd;
-	--hl-today-text: #14532d;
-	--hl-tomorrow: #ffefc2;
-	--hl-tomorrow-text: #713f12;
-	--hl-future: #e3efff;
-	--hl-future-text: #1e3a8a;
-	--hl-warning: #fff3c4;
-	--hl-warning-text: #713f12;
-	--hl-danger: #fde2e2;
-	--hl-danger-text: #7f1d1d;
-	--hl-success: #dcfce7;
-	--hl-success-text: #14532d;
+	--app-bg: #f6f7f9;
+	/* Leave type colours (charts, badges, balance cards). Validated as a categorical palette for colour
+	   vision deficiency and contrast against the card surface in both modes (dataviz palette check).
+	   WFH is not leave and stays neutral; rare types share "other" (grouped as Other in the charts). */
+	--type-PL: #2a78d6;
+	--type-SL: #eb6834;
+	--type-OPH: #1baf7a;
+	--type-CO: #8e44ad;
+	--type-WFH: #8a8f98;
+	--type-other: #c3c2b7;
+	/* Row and chip highlights: soft tints */
+	--hl-today: #e2f5ec;
+	--hl-today-text: #0f5a3d;
+	--hl-tomorrow: #fdf1d6;
+	--hl-tomorrow-text: #6b4a00;
+	--hl-future: #e8f0fb;
+	--hl-future-text: #1c4f8f;
+	--hl-warning: #fef4dc;
+	--hl-warning-text: #6b4a00;
+	--hl-danger: #fbe6e6;
+	--hl-danger-text: #8a2424;
+	--hl-success: #e2f5ec;
+	--hl-success-text: #0f5a3d;
+	/* Status colours, never used for a leave type */
+	--status-warning: #fab219;
+	--status-critical: #d03b3b;
+	/* Calmer accent (Bootstrap primary) in the PL blue */
+	--bs-primary: #2a78d6;
+	--bs-primary-rgb: 42, 120, 214;
+	--bs-primary-text-emphasis: #1c5cab;
+	--bs-primary-bg-subtle: #e6effb;
+	--bs-primary-border-subtle: #b7d3f6;
+	--bs-link-color: #256abf;
+	--bs-link-color-rgb: 37, 106, 191;
+	--bs-link-hover-color: #1c5cab;
+	--bs-link-hover-color-rgb: 28, 92, 171;
 }
 
 [data-bs-theme="dark"] {
-	--app-bg: #0f1218;
-	--type-PL: #3b82f6;
-	--type-SL: #ef4444;
-	--type-OPH: #22d3ee;
-	--type-WFH: #14b8a6;
-	--type-ML: #ec4899;
-	--type-PTL: #8b5cf6;
-	--type-MTL: #d946ef;
-	--type-CO: #eab308;
-	--type-RL: #f97316;
-	--type-LOP: #94a3b8;
-	--type-HBD: #fbbf24;
-	--type-other: #64748b;
-	--hl-today: #12391f;
-	--hl-today-text: #bbf7d0;
-	--hl-tomorrow: #3d2f0b;
-	--hl-tomorrow-text: #fde68a;
-	--hl-future: #172a4a;
-	--hl-future-text: #bfdbfe;
-	--hl-warning: #3d300b;
-	--hl-warning-text: #fde68a;
-	--hl-danger: #451a1a;
-	--hl-danger-text: #fecaca;
-	--hl-success: #12391f;
-	--hl-success-text: #bbf7d0;
+	--app-bg: #14171c;
+	--type-PL: #3987e5;
+	--type-SL: #d95926;
+	--type-OPH: #199e70;
+	--type-CO: #a646b9;
+	--type-WFH: #8b929b;
+	--type-other: #5c5c58;
+	--hl-today: #15382b;
+	--hl-today-text: #b9ebd3;
+	--hl-tomorrow: #3a2f12;
+	--hl-tomorrow-text: #f6dca0;
+	--hl-future: #172b45;
+	--hl-future-text: #b7d3f6;
+	--hl-warning: #3a2f12;
+	--hl-warning-text: #f6dca0;
+	--hl-danger: #432020;
+	--hl-danger-text: #f3c2c2;
+	--hl-success: #15382b;
+	--hl-success-text: #b9ebd3;
+	--bs-primary: #3987e5;
+	--bs-primary-rgb: 57, 135, 229;
+	--bs-primary-text-emphasis: #86b6ef;
+	--bs-primary-bg-subtle: #12253d;
+	--bs-primary-border-subtle: #1c5cab;
+	--bs-link-color: #6da7ec;
+	--bs-link-color-rgb: 109, 167, 236;
+	--bs-link-hover-color: #9ec5f4;
+	--bs-link-hover-color-rgb: 158, 197, 244;
+}
+
+.btn-primary {
+	--bs-btn-bg: #2a78d6;
+	--bs-btn-border-color: #2a78d6;
+	--bs-btn-hover-bg: #256abf;
+	--bs-btn-hover-border-color: #256abf;
+	--bs-btn-active-bg: #1c5cab;
+	--bs-btn-active-border-color: #1c5cab;
+	--bs-btn-disabled-bg: #2a78d6;
+	--bs-btn-disabled-border-color: #2a78d6;
+	--bs-btn-focus-shadow-rgb: 42, 120, 214;
+}
+.btn-outline-primary {
+	--bs-btn-color: #256abf;
+	--bs-btn-border-color: #86b6ef;
+	--bs-btn-hover-bg: #2a78d6;
+	--bs-btn-hover-border-color: #2a78d6;
+	--bs-btn-active-bg: #2a78d6;
+	--bs-btn-active-border-color: #2a78d6;
+	--bs-btn-focus-shadow-rgb: 42, 120, 214;
+}
+[data-bs-theme="dark"] .btn-outline-primary {
+	--bs-btn-color: #86b6ef;
+	--bs-btn-border-color: #256abf;
+}
+.form-check-input:checked {
+	background-color: var(--bs-primary);
+	border-color: var(--bs-primary);
 }
 
 body {
@@ -260,24 +301,20 @@ body {
 	border-bottom-color: var(--bs-border-color-translucent);
 }
 
-/* Leave type badges */
+/* Leave type badges: a soft tint of the type colour with a matching border, text in the text colour */
+[data-type] { --t: var(--type-other); }
+[data-type="PL"] { --t: var(--type-PL); }
+[data-type="SL"] { --t: var(--type-SL); }
+[data-type="OPH"] { --t: var(--type-OPH); }
+[data-type="CO"] { --t: var(--type-CO); }
+[data-type="WFH"] { --t: var(--type-WFH); }
 .type-badge {
-	background: var(--type-other);
-	color: #fff;
+	background: color-mix(in srgb, var(--t) 16%, var(--bs-body-bg));
+	border: 1px solid color-mix(in srgb, var(--t) 55%, var(--bs-body-bg));
+	color: var(--bs-body-color);
 	min-width: 2.75rem;
 	font-weight: 600;
 }
-.type-badge[data-type="PL"] { background: var(--type-PL); }
-.type-badge[data-type="SL"] { background: var(--type-SL); }
-.type-badge[data-type="OPH"] { background: var(--type-OPH); }
-.type-badge[data-type="WFH"] { background: var(--type-WFH); }
-.type-badge[data-type="ML"] { background: var(--type-ML); }
-.type-badge[data-type="PTL"] { background: var(--type-PTL); }
-.type-badge[data-type="MTL"] { background: var(--type-MTL); }
-.type-badge[data-type="CO"] { background: var(--type-CO); color: #1f1300; }
-.type-badge[data-type="RL"] { background: var(--type-RL); }
-.type-badge[data-type="LOP"] { background: var(--type-LOP); }
-.type-badge[data-type="HBD"] { background: var(--type-HBD); color: #1f1300; }
 
 /* Highlight chips and rows */
 .hl-chip {
@@ -395,16 +432,16 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 	--bs-btn-font-size: .8rem;
 }
 
-/* Balance cards */
+/* Balance cards: the type colour on the top edge and in the progress bar, warning / over in status colours */
 .balance-card {
-	border-top: 4px solid var(--bs-primary);
+	border-top: 4px solid var(--t);
 }
 .balance-card.is-warning {
-	border-top-color: #f59e0b;
+	border-top-color: var(--status-warning);
 	background: var(--hl-warning);
 }
 .balance-card.is-danger {
-	border-top-color: var(--bs-danger);
+	border-top-color: var(--status-critical);
 	background: var(--hl-danger);
 }
 .balance-stats {
@@ -436,18 +473,6 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 	text-transform: uppercase;
 	letter-spacing: .04em;
 }
-/* Taken in the type's colour, Available in the normal text colour */
-.balance-taken .balance-value { color: var(--type-other); }
-.balance-card[data-type="PL"] .balance-taken .balance-value { color: var(--type-PL); }
-.balance-card[data-type="SL"] .balance-taken .balance-value { color: var(--type-SL); }
-.balance-card[data-type="OPH"] .balance-taken .balance-value { color: var(--type-OPH); }
-.balance-card[data-type="WFH"] .balance-taken .balance-value { color: var(--type-WFH); }
-.balance-card[data-type="ML"] .balance-taken .balance-value { color: var(--type-ML); }
-.balance-card[data-type="PTL"] .balance-taken .balance-value { color: var(--type-PTL); }
-.balance-card[data-type="MTL"] .balance-taken .balance-value { color: var(--type-MTL); }
-.balance-card[data-type="CO"] .balance-taken .balance-value { color: var(--type-CO); }
-.balance-card[data-type="RL"] .balance-taken .balance-value { color: var(--type-RL); }
-.balance-card[data-type="LOP"] .balance-taken .balance-value { color: var(--type-LOP); }
 .balance-over .balance-value,
 .balance-over .balance-label {
 	color: var(--bs-danger-text-emphasis);
@@ -456,11 +481,14 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 	height: 6px;
 	background: color-mix(in srgb, var(--bs-secondary-bg) 70%, transparent);
 }
+.balance-card .progress-bar {
+	background: var(--t);
+}
 .balance-card.is-warning .progress-bar {
-	background: #f59e0b;
+	background: var(--status-warning);
 }
 .balance-card.is-danger .progress-bar {
-	background: var(--bs-danger);
+	background: var(--status-critical);
 }
 
 /* Who's out: tabs in the card header, long lists scroll inside the card (it is as tall as the month chart) */

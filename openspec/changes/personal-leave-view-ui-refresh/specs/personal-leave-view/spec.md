@@ -72,11 +72,15 @@ The system SHALL offer a Team view, with everyone's events, only to admin users 
 - **THEN** the Team view shows all people's events with their names
 
 ### Requirement: Holidays and birthdays visible to everyone
-The system SHALL show the company holidays list and the birthdays list to every signed-in user, admin or not. The birthdays list SHALL be built from all birthday (`HBD`) events in the calendar, not only the signed-in user's events.
+The system SHALL show the company holidays list and the birthdays list to every signed-in user, admin or not. The birthdays list SHALL be built from all birthday (`HBD: Name`) events in the birthday calendar, the Microsoft 365 group calendar named by `birthdayCalendarName` in the workspace config (default "Shared India"), not from the leave calendar, and not only from the signed-in user's events. When the birthday calendar cannot be read, the birthdays list SHALL say so and the rest of the app SHALL keep working.
 
 #### Scenario: Regular user opens birthdays
 - **WHEN** a non-admin user opens the Birthdays list
-- **THEN** the list shows the birthdays of everyone in the calendar
+- **THEN** the list shows the birthdays of everyone in the "Shared India" calendar
+
+#### Scenario: Birthday calendar not accessible
+- **WHEN** the user cannot read the "Shared India" calendar
+- **THEN** the Birthdays list says the birthdays could not be loaded from that calendar, and the Personal and Team views work as usual
 
 #### Scenario: Regular user opens holidays
 - **WHEN** a non-admin user opens the Holidays list

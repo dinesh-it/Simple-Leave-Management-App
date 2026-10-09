@@ -1,6 +1,6 @@
 // App state: the signed in user, the config and the calendar events per date range.
 // Non admins only ever keep their own events, everyone's events are kept for admins only.
-import { fetchEvents } from './calendar.js';
+import { fetchEvents, findBirthdayCalendar } from './calendar.js';
 import { isOwnEvent, birthdays, yearRange } from './leave.js';
 
 export const state = {
@@ -10,7 +10,8 @@ export const state = {
     config: null,
     calendar: null,     // {groupId, name, canEdit}
     yearOwn: [],        // own events of the current calendar year, for the balance
-    birthdays: {}       // {Name: 'YYYY-MM-DD'} of everyone
+    birthdays: null,    // {Name: 'YYYY-MM-DD'} of everyone, from the birthday calendar (null until loaded)
+    birthdaysError: ''  // why the birthdays could not be loaded
 };
 
 // 'from|to' -> Promise of {own, team}, team is null for non admins
@@ -20,7 +21,6 @@ export function loadRange(from, to) {
     const key = from.format() + '|' + to.format();
     if (!cache.has(key)) {
         const loading = fetchEvents(state.calendar.groupId, from, to).then((all) => {
-            Object.assign(state.birthdays, birthdays(all));
             return {
                 own: all.filter((ev) => isOwnEvent(ev, state.user)),
                 team: state.isAdmin ? all : null
@@ -30,6 +30,29 @@ export function loadRange(from, to) {
         cache.set(key, loading);
     }
     return cache.get(key);
+}
+
+// Birthdays from the birthday calendar (not the leave calendar), from a year ago to a year ahead so
+// yearly recurring and one-off HBD events are both found. Never throws: errors end up in birthdaysError.
+let birthdaysLoading = null;
+export function loadBirthdays() {
+    if (!birthdaysLoading) {
+        birthdaysLoading = (async () => {
+            const name = state.config.birthdayCalendarName;
+            try {
+                const cal = await findBirthdayCalendar(state.config);
+                const from = moment().startOf('day').subtract(1, 'year');
+                const to = moment().endOf('day').add(1, 'year');
+                const events = (await fetchEvents(cal.groupId, from, to)).sort((a, b) => (a.start.date || a.start.dateTime) < (b.start.date || b.start.dateTime) ? -1 : 1);
+                state.birthdays = birthdays(events);
+            } catch (e) {
+                console.log('Failed to load birthdays: ', e);
+                state.birthdays = {};
+                state.birthdaysError = 'Could not load the birthdays from the "' + name + '" calendar. You may need to be a member of that group.\n' + e.message;
+            }
+        })();
+    }
+    return birthdaysLoading;
 }
 
 export async function loadYear() {

@@ -5,7 +5,7 @@ import * as leave from '../leave.js';
 import { LeaveTable } from '../components/table.js';
 import { downloadSheet } from '../export.js';
 import { legend } from './personal.js';
-import { drawBarChart, monthChartData, typeColor, typeOrder, onThemeChange } from '../components/charts.js';
+import { drawBarChart, monthChartData, personChartData, typeOrder, onThemeChange } from '../components/charts.js';
 import { $, $$, esc, fmt, show, typeToggles, checkedValues, typeBadge, dateValue, parseDateInput, showAlert } from '../components/ui.js';
 
 let section;
@@ -434,26 +434,13 @@ function downloadSummary() {
 }
 
 function renderCharts(filtered) {
-    const leaveRows = filtered.filter((r) => leave.isLeaveType(r.type));
-    const types = typeOrder(state.config, Array.from(new Set(leaveRows.map((r) => leave.baseType(r.type)))));
-    const summary = leave.personSummary(leaveRows);
-    const total = (n) => Object.values(summary[n]).reduce((a, b) => a + b, 0);
-    const names = Object.keys(summary).sort((a, b) => total(b) - total(a) || a.localeCompare(b));
-
     // Both charts are vertical bars: month wise next to Who's out, person wise full width
     // Person wise only has totals on the bars, month wise has a number on every segment
     $('#chart-person-box', section).style.height = '360px';
     $('#chart-month-box', section).style.height = '380px';
 
     drawBarChart($('#chart-month', section), $('#chart-month-empty', section), monthChartData(state.config, filtered), false);
-    drawBarChart($('#chart-person', section), $('#chart-person-empty', section), {
-        labels: names,
-        datasets: types.map((t) => ({
-            label: t,
-            backgroundColor: typeColor(t),
-            data: names.map((n) => summary[n][t] || 0)
-        }))
-    }, false, 'totals');
+    drawBarChart($('#chart-person', section), $('#chart-person-empty', section), personChartData(filtered), false, 'totals');
 }
 
 async function applyRange() {

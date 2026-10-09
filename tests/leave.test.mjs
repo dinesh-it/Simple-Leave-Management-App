@@ -202,3 +202,14 @@ test("who's out second tab: rest of this week, or next week when none is left", 
     assert.deepEqual(leave.whosOut(ROWS, moment('2026-10-12')).map((o) => o.name + ':' + o.type), ['Meena:PL']);
 });
 
+test('birthdays: HBD titles, also when HBD is not a configured type', () => {
+    const ev = (summary, date) => ({ summary, start: { date }, end: { date } });
+    assert.deepEqual(leave.birthdays([ev('HBD: Kavya', '2026-11-02'), ev('Team lunch', '2026-11-03'), ev('PL: Ravi', '2026-01-15')]), { Kavya: '2026-11-02' });
+    leave.setupLeaveCalendar(Object.assign({}, baseline.config, { typeFilter: ['PL', 'SL', '-'] }));
+    try {
+        assert.deepEqual(leave.birthdays([ev('HBD: kavya', '2026-11-02'), ev('hbd - Ravi Kumar', '2026-01-15')]), { Kavya: '2026-11-02', Ravi: '2026-01-15' });
+    } finally {
+        leave.setupLeaveCalendar(baseline.config);
+    }
+});
+

@@ -67,7 +67,7 @@ The Personal view SHALL show, from top to bottom:
 2. Side by side on wide screens: an "Upcoming" list of the user's leave from today onwards (the next 5), and a "Leave days per month" chart.
 3. The "My leaves" list.
 
-The "Leave days per month" chart SHALL show the user's own leave days for each month (Jan to Dec), stacked by leave type, in the leave type colours. Half days count as 0.5. Each day counts in the month it falls in. The chart SHALL use exactly the rows that My leaves shows (date range, type filter and search). Each bar SHALL show its number of days, and a month with more than one type SHALL also show its total.
+The "Leave days per month" chart SHALL show the user's own leave days for each month (Jan to Dec), stacked by leave type, in the leave type colours. Charts SHALL show PL, SL, OPH, CO and WFH as their own series and group the other, rare leave types as "Other". Half days count as 0.5. Each day counts in the month it falls in. The chart SHALL use exactly the rows that My leaves shows (date range, type filter and search). Each bar SHALL show its number of days, and a month with more than one type SHALL also show its total.
 
 The "My leaves" list SHALL have columns for leave type, start date, day of week, dates covered and total days. It SHALL be sortable by column, filterable by leave type and date range, searchable by text, and downloadable to Excel. The date range SHALL default to the current calendar year.
 

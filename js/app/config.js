@@ -14,7 +14,9 @@ export const DEFAULTS = {
     slackWebhookUrl: '',
     calendarName: 'Shared Vacation (IN)',
     calendarGroupId: '',
-    calendarLink: ''
+    calendarLink: '',
+    birthdayCalendarName: 'Shared India',
+    birthdayCalendarGroupId: ''
 };
 
 export class ConfigError extends Error {}

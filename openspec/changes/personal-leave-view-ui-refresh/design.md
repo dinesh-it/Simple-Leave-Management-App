@@ -82,6 +82,8 @@ After each `fetchEvents`:
 
 The Personal view only ever reads `ownEvents`, and the Team view only reads `teamEvents`. `views/team.js` is loaded with a dynamic `import()` only when `isAdmin`, and its DOM section is created by that module. For a non-admin the page contains no Team markup at all.
 
+The birthdays list comes from a second Microsoft 365 group calendar, `birthdayCalendarName` (default "Shared India"), found the same way as the leave calendar (`calendar.findBirthdayCalendar`). It is loaded once in the background (`state.loadBirthdays`) for a year back to a year ahead, so recurring and one-off `HBD: Name` events are both found. A failure only affects the Birthdays list.
+
 `isAdmin` and the user name are settled before the first fetch. If `/me` fails, the user is a non-admin with no name, so `isOwnEvent` returns false and the app fails closed.
 
 *Alternative:* one data set filtered by CSS or a table filter, as in the first pass. Rejected because admins would still get a mixed table, and the data would be in the DOM for non-admins.
@@ -107,6 +109,14 @@ The Personal view only ever reads `ownEvents`, and the Team view only reads `tea
 `export.js` builds sheets from row arrays with `ExcellentExport.convert({format: 'xlsx', filename}, [{name, from: {array}}])`, so a download never depends on what is currently rendered. The monthly report keeps today's layout: for each month, a header, then one row per person with their dates per type. It is built from `leave.monthlyReport` (the former `cumulative_data`). If the vendored ExcellentExport cannot write xlsx, it falls back to the current `.xls` HTML-table export.
 
 ### 8. Charts
+**Colours.** The leave type colours come from a categorical palette checked with the data-visualisation palette validator against the app's card surfaces (`#ffffff` light, `#212529` dark):
+- PL blue `#2a78d6` / `#3987e5`
+- SL orange `#eb6834` / `#d95926`
+- OPH aqua `#1baf7a` / `#199e70`
+- CO purple `#8e44ad` / `#a646b9`
+
+These four pass as all pairs, because segments only touch their neighbours inside each bar, so any two can sit together. The colour-blind separation of CO from PL is in the 6–8 band, which is acceptable only with extra cues: the numbers or totals, the legends, the tooltips and a 2px gap in the card colour between stacked segments. WFH is not leave and stays a neutral slate (`#8a8f98` / `#8b929b`). The rare types (ML, PTL, MTL, RL, LOP, birthdays, unknown) share a light grey and are grouped as one "Other" series in the charts, because no palette passes with more distinct series in a stack. Badges are a soft tint of the type colour with text in the text colour, balance cards carry the colour on the top edge and in the progress bar, and warning / over-limit use the separate status colours.
+
 The chart code is in `components/charts.js`, shared by both views. Chart.js bar charts, `stacked: true`, one dataset per leave type with a fixed colour per type, so a type has the same colour in both charts:
 - **Month-wise:** Jan–Dec, days per type.
 - **Person-wise:** vertical bars, one per person (most days first), days per type. At the top of the Team view, the month-wise chart takes the left half next to the Who's out card (Today / Later this week tabs), and the person-wise chart is full width below them. Below the charts, the Team leaves list (two thirds) and the per-person summary (one third) are side by side on wide screens.

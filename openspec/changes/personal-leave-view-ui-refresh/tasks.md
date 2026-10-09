@@ -34,6 +34,8 @@
 
   Verify with `node --test` (OH config + OPH events) and the browser check (OPH card counted against the OH limit, Add Leave posts `OPH: <name>`).
 
+- [x] 2.8 Take birthdays from the "Shared India" group calendar (`birthdayCalendarName` / `birthdayCalendarGroupId` in the config) instead of the leave calendar, loaded in the background, with a message when it cannot be read. Verify with `node --test` (HBD parsing) and the browser checks (birthdays from the second calendar only, error message when not accessible).
+
 ## 3. App shell, sign-in and navigation
 
 - [x] 3.1 Write the new `index.html`:
@@ -97,6 +99,14 @@
   - below `md`: tabs on their own row and a floating Add Leave button
 
   Verify at 1280px and 375px that every action is reachable and the tabs are visible without opening a menu, with screenshots in light and dark.
+
+- [x] 7.5 Calmer, validated colours:
+  - leave type palette checked with the palette validator in both modes (PL, SL, OPH and CO pass as all pairs)
+  - WFH neutral; rare types grouped as "Other" in the charts
+  - 2px gaps between stacked segments
+  - tinted badges, type colour on the balance cards, softer highlights, and the PL blue as the Bootstrap accent
+
+  Verify with the validator output, the browser suite and light/dark screenshots.
 
 ## 8. Removing old code and docs
 

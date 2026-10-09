@@ -1,20 +1,29 @@
 // The leave calendar: the calendar of one Microsoft 365 group, through Microsoft Graph (js/msgraph.js)
 
-// {groupId, name, canEdit} of the group named calendarName (or with the id calendarGroupId)
-export async function findCalendar(config) {
-    let groupId = config.calendarGroupId;
+// {groupId, name, canEdit} of the Microsoft 365 group calendar with this display name (or this group id)
+async function findGroupCalendar(displayName, groupId) {
     if (!groupId) {
-        const name = config.calendarName.replace(/'/g, "''");
+        const name = displayName.replace(/'/g, "''");
         const data = await graph_get("/groups?$filter=displayName eq '" + encodeURIComponent(name) + "'&$select=id,displayName");
         const groups = data.value || [];
         if (!groups.length) {
-            throw new Error('Group calendar "' + config.calendarName + '" not found');
+            throw new Error('Group calendar "' + displayName + '" not found');
         }
         groupId = groups[0].id;
     }
     const cal = await graph_get(calendarPath(groupId) + '?$select=id,name,canEdit');
     // A group calendar is always named "Calendar", show the group name instead
-    return { groupId, name: config.calendarName, canEdit: cal.canEdit !== false };
+    return { groupId, name: displayName, canEdit: cal.canEdit !== false };
+}
+
+// The leave calendar: calendarName (or calendarGroupId) in the workspace config
+export function findCalendar(config) {
+    return findGroupCalendar(config.calendarName, config.calendarGroupId);
+}
+
+// The calendar with the birthdays (HBD: Name events): birthdayCalendarName (or birthdayCalendarGroupId)
+export function findBirthdayCalendar(config) {
+    return findGroupCalendar(config.birthdayCalendarName, config.birthdayCalendarGroupId);
 }
 
 function calendarPath(groupId) {

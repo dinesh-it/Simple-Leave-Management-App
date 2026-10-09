@@ -246,14 +246,19 @@ export function usageState(used, limit) {
     return 'ok';
 }
 
-// {Name: 'YYYY-MM-DD'} from HBD events
+// {Name: 'YYYY-MM-DD'} from HBD events (titled "HBD: Name", also when HBD is not in the config's types)
 export function birthdays(events) {
     const list = {};
     events.forEach((ev) => {
-        const [type, name] = splitSummary(ev.summary);
-        if (type == 'HBD') {
-            list[name] = eventDate(ev.start).format('YYYY-MM-DD');
+        let [type, name] = splitSummary(ev.summary);
+        if (type != 'HBD') {
+            const m = /^\s*HBD\s*[:-]\s*(.+)$/i.exec(ev.summary || '');
+            if (!m) {
+                return;
+            }
+            name = splitSummary('PL: ' + m[1])[1];
         }
+        list[name] = eventDate(ev.start).format('YYYY-MM-DD');
     });
     return list;
 }
