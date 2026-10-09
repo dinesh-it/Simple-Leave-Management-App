@@ -1,0 +1,4 @@
+{
+    "description": "Marks js/app as ES modules for Node (tests/leave.test.mjs), browsers load them with type=module",
+    "type": "module"
+}

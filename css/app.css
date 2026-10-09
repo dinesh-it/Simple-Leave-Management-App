@@ -1,158 +1,440 @@
-body table {                                                                                                                                                              
-	font-size: 100%;                                                                                                                                                      
-}                                                                                                                                                                         
-table.dataTable thead th {                                                                                                                                                
-	padding: 0;                                                                                                                                                           
-}                                                                                                                                                                         
-div.filter-container {                                                                                                                                                    
-	border-bottom:1px solid black;                                                                                                                                        
-	overflow: hidden;                                                                                                                                                     
-	width: 100%;                                                                                                                                                          
-	background-color: #2fbeb5;                                                                                                                                            
-	text-align: center;                                                                                                                                                   
-}                                                                                                                                                                         
-div.filter-box {                                                                                                                                                          
-	border:1px solid black;                                                                                                                                               
-	padding: 10px;                                                                                                                                                        
-}                                                                                                                                                                         
-div.options-box {                                                                                                                                                         
-	float: right;                                                                                                                                                         
-	padding: 3px;                                                                                                                                                         
-}                                                                                                                                                                         
-td.link {                                                                                                                                                                 
-	cursor: pointer;                                                                                                                                                      
-}                                                                                                                                                                         
-td.link:hover {                                                                                                                                                           
-	background: #00aafe;                                                                                                                                                  
-}                                                                                                                                                                         
-td.high {                                                                                                                                                                 
-	color: #f42555;                                                                                                                                                       
-	font-weight: bold;                                                                                                                                                    
-	text-decoration: underline;                                                                                                                                           
-}                         
-.yadcf-filter {
-	width: 50px;
-	padding: 0px;
-}
-.yadcf-filter[multiple] {
-	height: 100;
-	width:  100 !important;
-}
-div.div-bg {
-	background: #2FBEB7;
-	border: 2px;
-	border-style: groove;
-	padding: 0px;
-}
-div.col-md-12 {
-	padding: 0px;
-}
-div.processing {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	background-color: #d9edf7;
-	opacity: 0.8;
-	z-index: 10098;
+/* App styles on top of Bootstrap 5.3. Light and dark follow data-bs-theme (set from the system setting). */
+
+:root {
+	--app-bg: #f4f6fa;
+	/* Leave type colours (badges and charts) */
+	--type-PL: #2563eb;
+	--type-SL: #dc2626;
+	--type-OPH: #0891b2;
+	--type-WFH: #0d9488;
+	--type-ML: #db2777;
+	--type-PTL: #7c3aed;
+	--type-MTL: #c026d3;
+	--type-CO: #ca8a04;
+	--type-RL: #ea580c;
+	--type-LOP: #475569;
+	--type-HBD: #f59e0b;
+	--type-other: #94a3b8;
+	/* Row and chip highlights */
+	--hl-today: #d7f5dd;
+	--hl-today-text: #14532d;
+	--hl-tomorrow: #ffefc2;
+	--hl-tomorrow-text: #713f12;
+	--hl-future: #e3efff;
+	--hl-future-text: #1e3a8a;
+	--hl-warning: #fff3c4;
+	--hl-warning-text: #713f12;
+	--hl-danger: #fde2e2;
+	--hl-danger-text: #7f1d1d;
+	--hl-success: #dcfce7;
+	--hl-success-text: #14532d;
 }
 
-div.processing.info {                                                                                                                                                     
-	border-radius: 24px;                                                                                                                                                  
-	border: 1px solid green;                                                                                                                                              
-	position: fixed;                                                                                                                                                      
-	margin: 1%;                                                                                                                                                           
-	left: 0;                                                                                                                                                              
-	background-color: #fff;                                                                                                                                               
-	opacity: 1;                                                                                                                                                           
-	z-index: 10099;                                                                                                                                                       
-	padding: 15px;                                                                                                                                                        
-	display: block;                                                                                                                                                       
-	width: 98%;
-	height: 93px;
-	text-align: center;
+[data-bs-theme="dark"] {
+	--app-bg: #0f1218;
+	--type-PL: #3b82f6;
+	--type-SL: #ef4444;
+	--type-OPH: #22d3ee;
+	--type-WFH: #14b8a6;
+	--type-ML: #ec4899;
+	--type-PTL: #8b5cf6;
+	--type-MTL: #d946ef;
+	--type-CO: #eab308;
+	--type-RL: #f97316;
+	--type-LOP: #94a3b8;
+	--type-HBD: #fbbf24;
+	--type-other: #64748b;
+	--hl-today: #12391f;
+	--hl-today-text: #bbf7d0;
+	--hl-tomorrow: #3d2f0b;
+	--hl-tomorrow-text: #fde68a;
+	--hl-future: #172a4a;
+	--hl-future-text: #bfdbfe;
+	--hl-warning: #3d300b;
+	--hl-warning-text: #fde68a;
+	--hl-danger: #451a1a;
+	--hl-danger-text: #fecaca;
+	--hl-success: #12391f;
+	--hl-success-text: #bbf7d0;
 }
-h3.processing {
-	margin-top: 0px;
+
+body {
+	background: var(--app-bg);
 }
-div.info-box {
-	width: 100%;
-	padding: 6px;
-}
-tr.today td, span.today {
-	background: #bcd48d;
-	color: black;
-}
-tr.tomorrow td, span.tomorrow {
-	background: #fec84d;
-	color: black;
-}
-tr.future td, span.future {
-	background: #e0fdff;
-	color: black;
-}
-button {
-	padding-bottom: 0px;
-	border: 0px;
-}
-input[type=checkbox], input[type=radio] {
-	margin-top: 0px;
-}
-input.search-date {
-	border: 0px;
-	padding: 0px;
-	width: 86px;
-	padding-left: 2px;
-}
-.warning {
-	background-color: #ffe24b !important;
-}
-.danger {
-	background-color: #ffa0a0 !important;
-}
-/* position: relative from bootstrap makes the input unclickable for mobile devices */
-.col-md-3, .col-md-2 {
-	position: unset;
-}
-.liquidFillGaugeText {
-	font-family: Helvetica;
-	font-weight: bold;
-}
-.center {
-	text-align: center;
-	justify-content: center;
+
+/* Loading */
+.app-loading {
+	position: fixed;
+	inset: 0;
+	z-index: 2000;
+	display: flex;
 	align-items: center;
-	padding-top: 10px;
-	margin-bottom: 25px;
+	justify-content: center;
+	background: color-mix(in srgb, var(--app-bg) 80%, transparent);
 }
-.bottom-space {
-	margin-bottom: 10px;
+.app-loading.d-none {
+	display: none !important;
 }
-input.date_search {
-	width: 150px;
-	display: inline;
+.app-loading-card {
+	background: var(--bs-body-bg);
+	border-radius: var(--bs-border-radius-lg);
+	box-shadow: var(--bs-box-shadow);
+	padding: 1.5rem 2rem;
+	text-align: center;
+	min-width: 240px;
 }
-.filter-container .form-group {                                                                                                                                           
-	margin-bottom: 0px;
+
+/* Sign in */
+.signin {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
 }
-.filter-container input[type=checkbox] {
-	margin-top: 11px;
-	margin-bottom: 11px;
-	margin-left: 6px;
+.signin.d-none {
+	display: none !important;
 }
-.header {
-	border-bottom:1px solid black;
-	margin: 0px;
+.signin-card {
 	width: 100%;
-	background-color: #2fbeb5;
+	max-width: 420px;
+	border: 0;
 }
-.header h4 {
-	margin-top: 10px;
+.signin-icon {
+	font-size: 3rem;
 }
-.tooltip {
-	white-space: pre-line;
+
+/* Top bar: brand, underlined view tabs, Add Leave, More menu and the initials avatar */
+.app-navbar {
+	--app-bar-height: 60px;
+	padding: 0;
+	box-shadow: 0 1px 2px rgba(16, 24, 40, .04);
 }
-#cal_list {
-	height: 33px;
+.app-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	min-height: var(--app-bar-height);
+	column-gap: 1.5rem;
+}
+.app-navbar .navbar-brand {
+	display: flex;
+	align-items: center;
+	gap: .4rem;
+	padding: 0;
+	font-size: 1.1rem;
+}
+.view-tabs {
+	align-self: stretch;
+	gap: 1.25rem;
+	flex-wrap: nowrap;
+}
+.view-tabs .nav-item {
+	display: flex;
+}
+.view-tabs .nav-link {
+	display: flex;
+	align-items: center;
+	padding: 0 .1rem;
+	color: var(--bs-secondary-color);
+	font-weight: 500;
+	border-bottom: 2px solid transparent;
+	margin-bottom: -1px;
+}
+.view-tabs .nav-link:hover {
+	color: var(--bs-body-color);
+}
+.view-tabs .nav-link.active {
+	color: var(--bs-primary-text-emphasis);
+	border-bottom-color: var(--bs-primary);
+	font-weight: 600;
+}
+.view-tabs .nav-link:focus-visible {
+	outline: 2px solid var(--bs-primary);
+	outline-offset: -2px;
+	border-radius: 2px;
+}
+.app-bar-actions {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	margin-left: auto;
+}
+/* Holidays and Birthdays: quiet text buttons with an icon, icon only below xl */
+.header-link {
+	display: inline-flex;
+	align-items: center;
+	gap: .4rem;
+	height: 36px;
+	padding: 0 .65rem;
+	border: 0;
+	border-radius: var(--bs-border-radius-pill);
+	color: var(--bs-secondary-color);
+	font-weight: 500;
+}
+.header-link .bi {
+	font-size: 1.1rem;
+}
+.header-link:hover,
+.header-link:focus-visible {
+	background: var(--bs-tertiary-bg);
+	color: var(--bs-body-color);
+}
+@media (max-width: 1199.98px) {
+	.header-link {
+		width: 36px;
+		padding: 0;
+		justify-content: center;
+		border-radius: 50%;
+	}
+	.header-link-label {
+		display: none;
+	}
+}
+.avatar-btn {
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border-radius: 50%;
+	border: 0;
+	background: var(--bs-primary-bg-subtle);
+	color: var(--bs-primary-text-emphasis);
+	font-size: .8rem;
+	font-weight: 700;
+	letter-spacing: .02em;
+}
+.avatar-btn:hover,
+.avatar-btn:focus-visible,
+.avatar-btn.show {
+	background: var(--bs-primary-border-subtle);
+	color: var(--bs-primary-text-emphasis);
+}
+.app-navbar .dropdown-item {
+	display: flex;
+	align-items: center;
+	gap: .6rem;
+	padding: .45rem 1rem;
+}
+.app-navbar .dropdown-item .bi {
+	color: var(--bs-secondary-color);
+}
+.user-dropdown {
+	min-width: 13rem;
+}
+/* Add Leave on phones */
+.fab {
+	position: fixed;
+	right: 1rem;
+	bottom: 1rem;
+	z-index: 1030;
+	width: 56px;
+	height: 56px;
+	border-radius: 50%;
+	font-size: 1.5rem;
+	box-shadow: 0 6px 16px rgba(37, 99, 235, .35);
+}
+@media (max-width: 767.98px) {
+	.app-bar {
+		min-height: 0;
+		padding-top: .6rem;
+	}
+	/* Brand and the two menus in the first row, the tabs get their own row */
+	.view-tabs {
+		order: 3;
+		width: 100%;
+		height: 44px;
+		margin-top: .35rem;
+	}
+	/* Room for the floating button at the end of the page */
+	#app > footer {
+		padding-bottom: 5.5rem !important;
+	}
+}
+
+/* Cards */
+.card {
+	border-color: var(--bs-border-color-translucent);
+	box-shadow: 0 1px 2px rgba(16, 24, 40, .05);
+}
+.card-header {
+	border-bottom-color: var(--bs-border-color-translucent);
+}
+
+/* Leave type badges */
+.type-badge {
+	background: var(--type-other);
+	color: #fff;
+	min-width: 2.75rem;
+	font-weight: 600;
+}
+.type-badge[data-type="PL"] { background: var(--type-PL); }
+.type-badge[data-type="SL"] { background: var(--type-SL); }
+.type-badge[data-type="OPH"] { background: var(--type-OPH); }
+.type-badge[data-type="WFH"] { background: var(--type-WFH); }
+.type-badge[data-type="ML"] { background: var(--type-ML); }
+.type-badge[data-type="PTL"] { background: var(--type-PTL); }
+.type-badge[data-type="MTL"] { background: var(--type-MTL); }
+.type-badge[data-type="CO"] { background: var(--type-CO); color: #1f1300; }
+.type-badge[data-type="RL"] { background: var(--type-RL); }
+.type-badge[data-type="LOP"] { background: var(--type-LOP); }
+.type-badge[data-type="HBD"] { background: var(--type-HBD); color: #1f1300; }
+
+/* Highlight chips and rows */
+.hl-chip {
+	display: inline-block;
+	padding: .1rem .5rem;
+	border-radius: var(--bs-border-radius-pill);
+	font-size: .75rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.hl-today { background: var(--hl-today); color: var(--hl-today-text); }
+.hl-tomorrow { background: var(--hl-tomorrow); color: var(--hl-tomorrow-text); }
+.hl-future { background: var(--hl-future); color: var(--hl-future-text); }
+.hl-warning { background: var(--hl-warning); color: var(--hl-warning-text); }
+.hl-danger { background: var(--hl-danger); color: var(--hl-danger-text); }
+.hl-success { background: var(--hl-success); color: var(--hl-success-text); }
+.hl-muted { background: var(--bs-tertiary-bg); color: var(--bs-secondary-color); }
+.help-colours li {
+	margin-bottom: .4rem;
+}
+.help-colours .hl-chip {
+	min-width: 5rem;
+	text-align: center;
+	margin-right: .5rem;
+}
+
+.leave-table tr.row-today > * { --bs-table-bg-state: var(--hl-today); }
+.leave-table tr.row-tomorrow > * { --bs-table-bg-state: var(--hl-tomorrow); }
+.leave-table tr.row-future > * { --bs-table-bg-state: var(--hl-future); }
+
+/* Holiday and birthday rows use the chip colours */
+tr.hl-today > *, tr.hl-future > *, tr.hl-warning > *, tr.hl-danger > *, tr.hl-success > *, tr.hl-muted > * {
+	background: transparent;
+	color: inherit;
+}
+tr.hl-future > * { --bs-table-bg-state: var(--hl-future); }
+tr.hl-danger > * { --bs-table-bg-state: var(--hl-danger); }
+tr.hl-success > * { --bs-table-bg-state: var(--hl-success); }
+tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-secondary-color); }
+#holidays-list tr.past { display: none; }
+#holidays-list.show-past tr.past { display: table-row; }
+
+/* Tables */
+.leave-table thead th,
+.summary-table thead th {
+	white-space: nowrap;
+	font-size: .8rem;
+	text-transform: uppercase;
+	letter-spacing: .02em;
+	color: var(--bs-secondary-color);
+}
+.sort-btn {
+	background: none;
+	border: 0;
+	padding: 0;
+	color: inherit;
+	font: inherit;
+	text-transform: inherit;
+	letter-spacing: inherit;
+	white-space: nowrap;
+}
+.sort-btn:focus-visible {
+	outline: 2px solid var(--bs-primary);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+.summary-table tbody tr {
+	cursor: pointer;
+}
+.summary-table td.cell-warning { --bs-table-bg-state: var(--hl-warning); }
+.summary-table td.cell-danger { --bs-table-bg-state: var(--hl-danger); }
+.summary-note {
+	font-size: .7rem;
+	line-height: 1;
+}
+.search-input {
+	max-width: 220px;
+}
+
+/* Filter toggles */
+.type-toggles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .25rem;
+}
+.type-toggle {
+	--bs-btn-padding-y: .15rem;
+	--bs-btn-padding-x: .5rem;
+	--bs-btn-font-size: .8rem;
+}
+
+/* Balance cards */
+.balance-card {
+	border-top: 4px solid var(--bs-primary);
+}
+.balance-card.is-warning {
+	border-top-color: #f59e0b;
+	background: var(--hl-warning);
+}
+.balance-card.is-danger {
+	border-top-color: var(--bs-danger);
+	background: var(--hl-danger);
+}
+.balance-main {
+	color: var(--bs-secondary-color);
+	margin: .25rem 0 .5rem;
+}
+.balance-value {
+	color: var(--bs-body-color);
+	font-size: 2rem;
+	font-weight: 700;
+	line-height: 1.1;
+}
+.balance-card.is-danger .balance-value {
+	color: var(--bs-danger-text-emphasis);
+}
+.balance-card .progress {
+	height: 6px;
+	background: color-mix(in srgb, var(--bs-secondary-bg) 70%, transparent);
+}
+.balance-card.is-warning .progress-bar {
+	background: #f59e0b;
+}
+.balance-card.is-danger .progress-bar {
+	background: var(--bs-danger);
+}
+
+/* Who's out */
+.present-value {
+	font-size: 2.25rem;
+	font-weight: 700;
+	line-height: 1;
+}
+
+/* Add Leave review */
+.review-list dt {
+	font-weight: 600;
+	color: var(--bs-secondary-color);
+}
+
+/* Small screens */
+@media (max-width: 575.98px) {
+	.balance-value {
+		font-size: 1.5rem;
+	}
+	.search-input {
+		max-width: none;
+		width: 100%;
+	}
+	#views {
+		padding-top: 1rem !important;
+	}
+}
+
+/* Keep notices above the floating Add Leave button on phones */
+@media (max-width: 767.98px) {
+	#toast-area {
+		bottom: 5rem !important;
+	}
 }

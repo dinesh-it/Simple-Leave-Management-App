@@ -8,7 +8,9 @@
 * Whenever an event is created from the app, a message is posted to Slack (optional)
 * App does not have a approve/deney etc.. options yet. (Will be added soon)
 * Depends on `js/data.js` for the app registration ids and a workspace config file in OneDrive (see below)
-* Code is very bad as of now - Improvements and PR's are welcome
+* Two views: **Personal** (everyone, only your own leave) and **Team** (admins only, everyone's leave), see *Leave visibility* below
+* Built with Bootstrap 5 and plain JavaScript modules, static files with no build step (see *Code layout*)
+* Improvements and PR's are welcome
 
 ## Microsoft 365 setup
 
@@ -40,12 +42,11 @@ Only signed in users who can open the file can use the app.
 ```json
 {
     "companyName": "Company",
-    "typeFilter": ["PL", "SL", "ML", "PTL", "MTL", "RL", "WFH", "CO", "LOP", "HBD", "-"],
+    "typeFilter": ["PL", "SL", "OPH", "ML", "PTL", "MTL", "RL", "WFH", "CO", "LOP", "HBD", "-"],
     "removeEvents": ["-", "HBD", "MTL", "PTL", "ML", "RL", "LOP"],
     "totalEmps": 27,
-    "eventLimits": { "PL": 18, "SL": 12 },
+    "eventLimits": { "PL": 18, "SL": 12, "OPH": 1 },
     "adminNames": { "DINESH": 1 },
-    "showFuelGauge": false,
     "holidayList": { "2026-01-26": "Republic Day" },
     "userExtraAllowance": { "Dinesh": { "PL": 2 } },
     "slackWebhookUrl": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
@@ -54,7 +55,12 @@ Only signed in users who can open the file can use the app.
 }
 ```
 
-* The keys are the same as the old Google Docs config, the content can be copied as is.
+* The keys are the same as the old Google Docs config, the content can be copied as is. Missing keys get the defaults shown above.
+* `totalEmps`: number of people, used for the "in the office" count in the Team view's *Who's out today*.
+* `removeEvents`: leave types that start unticked in the Team view's type filter.
+* Optional holidays are titled `OPH: Name` in the calendar. `OH` (in the config or in a title) is read as the same type,
+  so an older config with `"OH": 1` in `eventLimits` keeps working.
+* `showFuelGauge` is no longer used (the gauges were replaced by *Who's out*), it can stay in the file.
 * `slackWebhookUrl` (optional): Slack Incoming Webhook to post to whenever an event is created from the app.
   Create it from a Slack app with *Incoming Webhooks* enabled, for the target channel.
   Leave it out to disable Slack messages.
@@ -68,6 +74,52 @@ Notes on Slack:
   rotate the webhook if it leaks.
 * Browsers can not read Slack's response (Slack does not allow CORS), so a revoked / invalid webhook fails silently,
   only network errors are logged in the browser console. Creating the event is never affected.
+
+## Leave visibility
+
+* **Personal view** (everyone, admins included): only your own leave. It shows the *My leave balance* cards, your upcoming
+  leave and *My leaves* with filters, search and Excel download. Searching or clearing filters never shows anyone else.
+* **Team view** (admins only, users whose first name is a key in `adminNames`):
+  * *Who's out* today and for the rest of the week
+  * the team leave list with person, type and date range filters, search and Excel download
+  * the per-person summary with near-limit and over-limit warnings
+  * month-wise and person-wise charts
+  * the Excel monthly report
+
+  For non admins the Team view is not built at all, and the app keeps no other people's events in the browser.
+* Company holidays and birthdays (`HBD: Name` events) are shown to everyone.
+* An event belongs to a user when its title is `TYPE: <first name>` (e.g. `PL: Dinesh`, `HSL: Dinesh` for half a day),
+  matched against the first name of the user's Microsoft 365 profile, ignoring case. Non admins can only add leave
+  under their own name, admins can change the title to add leave for someone else.
+* The balance cards always count the current calendar year, whatever date range is listed.
+
+Caveats:
+* **This is a display rule, not a security control.** Every user is a member of the Microsoft 365 group,
+  so they can still read the whole calendar in Outlook / Teams or through Microsoft Graph.
+* Matching is by first name only: two people with the same first name see each other's leave,
+  someone whose events use a nickname sees nothing, and someone who shares a first name with an admin gets the Team view.
+
+## Code layout
+
+* `index.html`: the page shell. The MSAL popup redirect bridge at the top must stay first.
+* `js/app/`: the app as ES modules (`main.js` boots it, `leave.js` holds all leave math, `views/personal.js` and
+  `views/team.js` are the two views, `add-leave.js` is the Add Leave dialog).
+* `js/data.js`, `js/msgraph.js`, `js/slack.js`: app registration ids, Microsoft sign in / Graph and Slack (classic scripts).
+* `vendor/`: Bootstrap 5, Bootstrap Icons and Chart.js, versions in `vendor/VERSIONS.md`. `js/plugins/`: MSAL, moment,
+  moment-business-days and ExcellentExport. No CDN is used at runtime and there is no build step.
+* After a change to a module, bump the `?v=` numbers in the import map in `index.html` so browsers load the new files.
+
+## Tests
+
+The leave math (title parsing, business day counts, balances, reports) is tested with Node's built in test runner,
+no install needed (Node 20 or newer):
+
+```
+node --test
+```
+
+`tests/fixtures/baseline.json` holds the outputs of the old jQuery version for the same events, so the tests also check
+that the counts did not change with the redesign.
 
 ## Running locally
 

@@ -1,0 +1,501 @@
+{
+  "note": "Outputs of the jQuery build (js/main.js) on these events, used by tests/leave.test.mjs for parity",
+  "now": "2026-10-07T10:00:00+05:30",
+  "config": {
+    "companyName": "TestCo",
+    "typeFilter": [
+      "PL",
+      "SL",
+      "ML",
+      "PTL",
+      "MTL",
+      "RL",
+      "WFH",
+      "CO",
+      "LOP",
+      "HBD",
+      "-"
+    ],
+    "removeEvents": [
+      "-",
+      "HBD",
+      "MTL",
+      "PTL",
+      "ML",
+      "RL",
+      "LOP"
+    ],
+    "totalEmps": 10,
+    "eventLimits": {
+      "PL": 18,
+      "SL": 12
+    },
+    "adminNames": {
+      "DINESH": 1
+    },
+    "showFuelGauge": true,
+    "holidayList": {
+      "2026-01-26": "Republic Day",
+      "2026-10-02": "Gandhi Jayanti",
+      "2026-12-25": "Christmas"
+    },
+    "userExtraAllowance": {
+      "Priya": {
+        "PL": 2
+      }
+    },
+    "calendarName": "Shared Vacation (IN)",
+    "calendarLink": "https://outlook.office.com/calendar/view/month"
+  },
+  "events": [
+    {
+      "id": "PL: Priya|2025-12-01",
+      "subject": "PL: Priya",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2025-12-01T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2025-12-02T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "Meena - SL|2026-02-10",
+      "subject": "Meena - SL",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-02-10T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-02-11T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "PL: Priya|2026-03-02",
+      "subject": "PL: Priya",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-03-02T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-03-05T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "PL: Arun|2026-04-06",
+      "subject": "PL: Arun",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-04-06T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-04-07T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "HSL: priya|2026-05-05",
+      "subject": "HSL: priya",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-05-05T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-05-06T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "HBD: Arun|2026-06-15",
+      "subject": "HBD: Arun",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-06-15T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-06-16T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "LOP: Arun|2026-07-01",
+      "subject": "LOP: Arun",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-07-01T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-07-02T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "PL: Shefali Kumar|2026-08-03",
+      "subject": "PL: Shefali Kumar",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-08-03T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-08-04T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "PL: Arun|2026-09-30",
+      "subject": "PL: Arun",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-09-30T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-10-06T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "SL: Arun|2026-10-07",
+      "subject": "SL: Arun",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-10-07T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-10-08T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "HPL: Meena|2026-10-07",
+      "subject": "HPL: Meena",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-10-07T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-10-08T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "WFH: Priya|2026-10-08",
+      "subject": "WFH: Priya",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-10-08T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-10-09T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "PL - Meena|2026-10-09",
+      "subject": "PL - Meena",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-10-09T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-10-14T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "HBD: Priya|2026-11-20",
+      "subject": "HBD: Priya",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-11-20T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2026-11-21T00:00:00.0000000"
+      }
+    },
+    {
+      "id": "SL: Priya|2026-12-28",
+      "subject": "SL: Priya",
+      "isAllDay": true,
+      "isCancelled": false,
+      "start": {
+        "dateTime": "2026-12-28T00:00:00.0000000"
+      },
+      "end": {
+        "dateTime": "2027-01-02T00:00:00.0000000"
+      }
+    }
+  ],
+  "range": [
+    "2026-01-01T00:00:00+05:30",
+    "2026-12-31T23:59:59+05:30"
+  ],
+  "rows": [
+    [
+      "SL",
+      "Priya",
+      "2026-12-28",
+      "Dec, Mon",
+      "28, 29, 30, 31",
+      4
+    ],
+    [
+      "HBD",
+      "Priya",
+      "2026-11-20",
+      "Nov, Fri",
+      "20",
+      1
+    ],
+    [
+      "PL",
+      "Meena",
+      "2026-10-09",
+      "Oct, Fri",
+      "9, 12, 13",
+      3
+    ],
+    [
+      "WFH",
+      "Priya",
+      "2026-10-08",
+      "Oct, Thu",
+      "8",
+      1
+    ],
+    [
+      "SL",
+      "Arun",
+      "2026-10-07",
+      "Oct, Wed",
+      "7",
+      1
+    ],
+    [
+      "HPL",
+      "Meena",
+      "2026-10-07",
+      "Oct, Wed",
+      "7",
+      0.5
+    ],
+    [
+      "PL",
+      "Arun",
+      "2026-09-30",
+      "Sep, Wed",
+      "30, 1, 5",
+      3
+    ],
+    [
+      "PL",
+      "Shefali Kumar",
+      "2026-08-03",
+      "Aug, Mon",
+      "3",
+      1
+    ],
+    [
+      "LOP",
+      "Arun",
+      "2026-07-01",
+      "Jul, Wed",
+      "1",
+      1
+    ],
+    [
+      "HBD",
+      "Arun",
+      "2026-06-15",
+      "Jun, Mon",
+      "15",
+      1
+    ],
+    [
+      "HSL",
+      "Priya",
+      "2026-05-05",
+      "May, Tue",
+      "5",
+      0.5
+    ],
+    [
+      "PL",
+      "Arun",
+      "2026-04-06",
+      "Apr, Mon",
+      "6",
+      1
+    ],
+    [
+      "PL",
+      "Priya",
+      "2026-03-02",
+      "Mar, Mon",
+      "2, 3, 4",
+      3
+    ],
+    [
+      "SL",
+      "Meena",
+      "2026-02-10",
+      "Feb, Tue",
+      "10",
+      1
+    ]
+  ],
+  "monthlyReport": {
+    "February": {
+      "Meena": {
+        "SL": [
+          "10"
+        ]
+      }
+    },
+    "March": {
+      "Priya": {
+        "PL": [
+          "02",
+          "03",
+          "04"
+        ]
+      }
+    },
+    "April": {
+      "Arun": {
+        "PL": [
+          "06"
+        ]
+      }
+    },
+    "May": {
+      "Priya": {
+        "HSL": [
+          "05"
+        ]
+      }
+    },
+    "June": {
+      "Arun": {
+        "HBD": [
+          "15"
+        ]
+      }
+    },
+    "July": {
+      "Arun": {
+        "LOP": [
+          "01"
+        ]
+      }
+    },
+    "August": {
+      "Shefali Kumar": {
+        "PL": [
+          "03"
+        ]
+      }
+    },
+    "September": {
+      "Arun": {
+        "PL": [
+          "30"
+        ]
+      }
+    },
+    "October": {
+      "Arun": {
+        "PL": [
+          "01",
+          "05"
+        ],
+        "SL": [
+          "07"
+        ]
+      },
+      "Meena": {
+        "HPL": [
+          "07"
+        ],
+        "PL": [
+          "09",
+          "12",
+          "13"
+        ]
+      },
+      "Priya": {
+        "WFH": [
+          "08"
+        ]
+      }
+    },
+    "November": {
+      "Priya": {
+        "HBD": [
+          "20"
+        ]
+      }
+    },
+    "December": {
+      "Priya": {
+        "SL": [
+          "28",
+          "29",
+          "30",
+          "31"
+        ]
+      }
+    }
+  },
+  "countsTable": {
+    "Arun": {
+      "SL": 1,
+      "PL": 4
+    },
+    "Meena": {
+      "SL": 1,
+      "PL": 3.5
+    },
+    "Priya": {
+      "SL": 4.5,
+      "PL": 3,
+      "WFH": 1
+    },
+    "Shefali Kumar": {
+      "PL": 1
+    }
+  },
+  "birthdays": [
+    "Arun",
+    "Priya"
+  ],
+  "adminErrors": [
+    "HTTP 404 http://localhost:5173/css/images/sort_both.png",
+    "console: Failed to load resource: the server responded with a status of 404 (File not found)",
+    "HTTP 404 http://localhost:5173/css/images/sort_desc.png",
+    "console: Failed to load resource: the server responded with a status of 404 (File not found)",
+    "HTTP 404 http://localhost:5173/css/images/sort_asc.png",
+    "console: Failed to load resource: the server responded with a status of 404 (File not found)",
+    "HTTP 404 http://localhost:5173/favicon.ico?v=2",
+    "console: Failed to load resource: the server responded with a status of 404 (File not found)"
+  ],
+  "ownCounts_Priya": {
+    "PL": 3,
+    "SL": 4.5,
+    "WFH": 1,
+    "HBD": 1
+  },
+  "ownCounts_Arun": {
+    "PL": 4,
+    "HBD": 1,
+    "LOP": 1,
+    "SL": 1
+  },
+  "ownCounts_Meena": {
+    "SL": 1,
+    "PL": 3.5
+  }
+}
