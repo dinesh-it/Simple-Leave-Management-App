@@ -20,15 +20,16 @@
      (add it with and without the trailing slash to be safe). Do not use the "Web" platform
      (sign in fails with `AADSTS9002326`) and do not create a client secret.
 2. **API permissions** > Add a permission > Microsoft Graph > **Delegated**:
-   `User.Read`, `Calendars.ReadWrite`, `Calendars.ReadWrite.Shared`, `Files.Read.All`
+   `User.Read`, `Group.ReadWrite.All`, `Files.Read.All`
+   (`Group.ReadWrite.All` is needed for the Microsoft 365 group calendar, the `Calendars.*` permissions do not cover group calendars)
 3. **Admin consent**: a tenant admin clicks *Grant admin consent for &lt;org&gt;* on the API permissions page
    (or opens `https://login.microsoftonline.com/<TENANT_ID>/adminconsent?client_id=<CLIENT_ID>` once).
-   Depending on the tenant's user consent policy users can not approve `Files.Read.All` themselves,
-   until consent is granted they see "Need admin approval".
+   `Group.ReadWrite.All` always needs admin consent, until consent is granted users see "Need admin approval".
 4. Copy *Application (client) ID* and *Directory (tenant) ID* from the app's Overview page into `js/data.js`
    (`CLIENT_ID`, `TENANT_ID`).
-5. Every user should have the shared leave calendar in their Outlook / Teams calendar list (with edit rights to add events).
-   Only calendars returned for the user are listed in the app, a calendar with "vacation" in its name is selected by default.
+5. The leave calendar is the calendar of a Microsoft 365 group, every user of the app must be a member of that group.
+   The app only uses the group named by `calendarName` in the workspace config (default `Shared Vacation (IN)`),
+   or the group with the id `calendarGroupId` when it is set.
 
 ## Workspace config (OneDrive)
 
@@ -48,6 +49,7 @@ Only signed in users who can open the file can use the app.
     "holidayList": { "2026-01-26": "Republic Day" },
     "userExtraAllowance": { "Dinesh": { "PL": 2 } },
     "slackWebhookUrl": "https://hooks.slack.com/services/XXX/YYY/ZZZ",
+    "calendarName": "Shared Vacation (IN)",
     "calendarLink": "https://outlook.office.com/calendar/view/month"
 }
 ```
@@ -56,6 +58,8 @@ Only signed in users who can open the file can use the app.
 * `slackWebhookUrl` (optional): Slack Incoming Webhook to post to whenever an event is created from the app.
   Create it from a Slack app with *Incoming Webhooks* enabled, for the target channel.
   Leave it out to disable Slack messages.
+* `calendarName` (optional): display name of the Microsoft 365 group whose calendar the app reads and writes, default `Shared Vacation (IN)`.
+* `calendarGroupId` (optional): object id of that group, skips the lookup by name.
 * `calendarLink` (optional): URL opened by the calendar button (Outlook / Teams calendar), the button is hidden without it.
 
 Notes on Slack:

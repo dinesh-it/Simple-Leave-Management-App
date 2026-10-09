@@ -1,6 +1,6 @@
 // Microsoft identity (MSAL) and Microsoft Graph helpers
 var GRAPH_BASE = 'https://graph.microsoft.com/v1.0';
-var GRAPH_SCOPES = ['User.Read', 'Calendars.ReadWrite', 'Calendars.ReadWrite.Shared', 'Files.Read.All'];
+var GRAPH_SCOPES = ['User.Read', 'Group.ReadWrite.All', 'Files.Read.All'];
 var GRAPH_TIME_ZONE = 'India Standard Time';
 
 var msalInstance = null;

@@ -37,6 +37,11 @@ var company_name = "Dinesh";
 var user_extra_allowance = {};
 var slack_webhook_url = '';
 var calendar_link = '';
+// The one Microsoft 365 group calendar the app reads and writes, found by the group's display name
+// (or by calendarGroupId from the workspace config)
+var calendar_name = 'Shared Vacation (IN)';
+var calendar_group_id = '';
+var leave_calendar_id = null;
 
 // Calendars listed for the signed in user (Microsoft Graph calendar resources)
 var all_calendars = [];
@@ -486,12 +491,6 @@ function bind_events() {
         });
     });
 
-    $('#cal_list').change(function() {
-        var cal_id = $('#cal_list').val();
-        eraseCookie('sci');
-        createCookie('sci', cal_id, 9999);
-        refresh_data();
-    });
 }
 
 // Just for Fun -- :-)
@@ -545,48 +544,41 @@ function loadCalendars(isSignedIn) {
         $('.filter-box').show();
         render_calendar_link();
 
-        $('#cal_list').html('');
-        var sel_cal_id = get_calendar_id();
+        $('#cal_list').html('').prop('disabled', true);
+        leave_calendar_id = null;
+        eraseCookie('sci');
 
         // Login name is needed before events are processed (own leave counts)
         graph_get('/me?$select=givenName,displayName').then(updateLoginInfo, function(err) {
             console.log('Failed to get user profile: ', err);
         }).then(function() {
-            progress_bar("Getting Calendar list");
-            return graph_get_all('/me/calendars?$select=id,name,canEdit');
-        }).then(function(calendars) {
-            all_calendars = calendars;
-
-            // Forget a remembered calendar that is no longer available (e.g. an old Google calendar id)
-            var known = $.grep(calendars, function(cal) { return cal.id == sel_cal_id; });
-            if (sel_cal_id && !known.length) {
-                eraseCookie('sci');
-                sel_cal_id = null;
+            progress_bar("Getting Calendar");
+            if (calendar_group_id) {
+                return calendar_group_id;
             }
-
-            $.each(calendars, function(i, cal) {
-                var opt = $('<option>').val(cal.id).text(cal.name);
-                if (sel_cal_id && sel_cal_id == cal.id) {
-                    opt.attr('selected', 'selected');
+            var name = calendar_name.replace(/'/g, "''");
+            return graph_get("/groups?$filter=displayName eq '" + encodeURIComponent(name) + "'&$select=id,displayName").then(function(data) {
+                var groups = data.value || [];
+                if (!groups.length) {
+                    throw new Error('Group calendar "' + calendar_name + '" not found');
                 }
-
-				if(!sel_cal_id && cal.name.match(/vacation/i)) {
-					console.log("Selecting " + cal.name + " as the default calendar");
-                    opt.attr('selected', 'selected');
-					sel_cal_id = cal.id;
-				}
-
-                if (!sel_cal_id && i == 0) {
-                    opt.attr('selected', 'selected');
-					console.log("Selecting " + cal.name + " as the default calendar");
-                }
-                $('#cal_list').append(opt);
+                return groups[0].id;
             });
+        }).then(function(group_id) {
+            leave_calendar_id = group_id;
+            return graph_get(calendar_path() + '?$select=id,name,canEdit');
+        }).then(function(cal) {
+            // A group calendar is always named "Calendar", show the group name instead
+            cal.name = calendar_name;
+            all_calendars = [cal];
+            console.log("Using " + cal.name + " as the leave calendar");
+            $('#cal_list').append($('<option>').val(leave_calendar_id).text(cal.name).attr('selected', 'selected'));
             listEvents(from, to);
         }, function(err) {
-            console.log('Failed to get calendar list: ', err);
-            progress_bar("ERROR: Failed to get calendar list!");
-            m_alert('ERROR: Failed to get calendar list!\n' + err.message);
+            console.log('Failed to get calendar: ', err);
+            progress_bar("ERROR: Failed to get calendar!");
+            m_alert('ERROR: Failed to get the calendar "' + calendar_name + '"!\n' + err.message +
+                '\n\nYou need to be a member of the "' + calendar_name + '" group.');
         });
 
     } else {
@@ -699,7 +691,7 @@ function listEvents(from, to) {
     var from_date = from_date_obj.format();
     var to_date = to_date_obj.format();
 
-    var url = '/me/calendars/' + encodeURIComponent(calendar_id) + '/calendarView' +
+    var url = '/groups/' + encodeURIComponent(calendar_id) + '/calendarView' +
         '?startDateTime=' + encodeURIComponent(from_date) +
         '&endDateTime=' + encodeURIComponent(to_date) +
         '&$select=subject,start,end,isAllDay,isCancelled' +
@@ -724,14 +716,12 @@ function listEvents(from, to) {
 }
 
 function get_calendar_id() {
-    var cookie_cal_id = readCookie('sci');
-    if (cookie_cal_id) {
-        //console.log("Cookie: ", cookie_cal_id);
-        return cookie_cal_id;
-    }
+    return leave_calendar_id;
+}
 
-    //console.log('selected: ', $('#cal_list').val());
-    return $('#cal_list').val();
+// Graph path of the leave calendar (the calendar of the Microsoft 365 group)
+function calendar_path() {
+    return '/groups/' + encodeURIComponent(leave_calendar_id) + '/calendar';
 }
 
 // Logged in user info from Microsoft Graph /me
@@ -1503,9 +1493,12 @@ function create_event(data) {
 
 function submit_event(data) {
 
-    var calendar_id = get_calendar_id();
-    var calendar = $.grep(all_calendars, function(cal) { return cal.id == calendar_id; })[0];
-    if (calendar && calendar.canEdit === false) {
+    var calendar = get_calendar_id() ? all_calendars[0] : null;
+    if (!calendar) {
+        m_alert('The calendar "' + calendar_name + '" is not available');
+        return;
+    }
+    if (calendar.canEdit === false) {
         m_alert('You do not have permission to add events to the calendar "' + calendar.name + '"');
         return;
     }
@@ -1564,7 +1557,7 @@ function submit_event(data) {
     }
 
     progress_bar("Creating event...");
-    graph_post('/me/calendars/' + encodeURIComponent(calendar_id) + '/events', event, true).then(function(created) {
+    graph_post(calendar_path() + '/events', event, true).then(function(created) {
         progress_bar('', true);
         graph_resp_process(created, function() {
             $('#add_event_modal').modal('hide');
@@ -1935,6 +1928,8 @@ function apply_workspace_config(text, isSignedIn) {
 	user_extra_allowance = json_config.userExtraAllowance;
 	slack_webhook_url = json_config.slackWebhookUrl || '';
 	calendar_link = json_config.calendarLink || '';
+	calendar_name = json_config.calendarName || calendar_name;
+	calendar_group_id = json_config.calendarGroupId || '';
 	console.log("Config loaded");
 	init();
 	loadCalendars(isSignedIn);
