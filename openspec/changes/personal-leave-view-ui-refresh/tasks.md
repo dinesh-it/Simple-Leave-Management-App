@@ -77,6 +77,8 @@
 
 - [x] 5.10 Add a Download (Excel) to the per-person summary (days per type, days left for limited types, the rows shown), and make clicking a person put the name in the summary's Search person box and the Team leaves Person filter (kept in step both ways, clearing shows everyone). Verify with the browser check: the downloaded file has the header and values, clicking Priya fills both and lists only Priya, clearing Search person shows everyone, choosing in the Person filter fills Search person.
 
+- [x] 5.11 Readable charts with many people: every name on the person-wise axis (no skipping, slanted), only totals on the person-wise bars, a number on every month-wise segment, and tooltips listing the days per type and the total of a bar. Verify with the browser check on 27 and 50 people: all names, one total per person bar, all month segments numbered.
+
 ## 6. Add Leave (`add-leave.js`)
 
 - [x] 6.1 Build the dialog with leave type, the quick date choices (Today/Tomorrow/Yesterday/Other, moving to the next working day on holidays or weekends), full/first half/second half, from/to/days kept in sync with native date inputs, location and description. Verify each control, including a Saturday "Today".

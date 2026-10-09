@@ -165,11 +165,15 @@ The Team view SHALL show a summary table with one row per person and one column 
 - **THEN** an Excel file with one row per person shown, the days per type and the days left for limited types is downloaded
 
 ### Requirement: Team view – charts
-The Team view SHALL show a month-wise chart (days per month, stacked by leave type) and a person-wise chart (days per person, stacked by leave type), both built from the team list's current filters. Like the Personal chart, the bars SHALL show their numbers of days and stacks their totals.
+The Team view SHALL show a month-wise chart (days per month, stacked by leave type) and a person-wise chart (days per person, stacked by leave type), both built from the team list's current filters. The month-wise bars SHALL show their numbers of days and stacks their totals, like the Personal chart. The person-wise chart SHALL show every person's name and only the total above each bar. Hovering a bar in any chart SHALL list its days per type and its total.
 
 #### Scenario: Charts follow filters
 - **WHEN** an admin filters the team list to SL
 - **THEN** both charts show only SL days
+
+#### Scenario: Many people
+- **WHEN** the team list has 50 people
+- **THEN** the person-wise chart shows all 50 names and one total above each bar, and hovering a bar shows that person's days per type and total
 
 #### Scenario: No data
 - **WHEN** the current filters match no events

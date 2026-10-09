@@ -441,8 +441,9 @@ function renderCharts(filtered) {
     const names = Object.keys(summary).sort((a, b) => total(b) - total(a) || a.localeCompare(b));
 
     // Both charts are vertical bars: month wise next to Who's out, person wise full width
-    $('#chart-person-box', section).style.height = '300px';
-    $('#chart-month-box', section).style.height = '300px';
+    // Person wise only has totals on the bars, month wise has a number on every segment
+    $('#chart-person-box', section).style.height = '360px';
+    $('#chart-month-box', section).style.height = '380px';
 
     drawBarChart($('#chart-month', section), $('#chart-month-empty', section), monthChartData(state.config, filtered), false);
     drawBarChart($('#chart-person', section), $('#chart-person-empty', section), {
@@ -452,7 +453,7 @@ function renderCharts(filtered) {
             backgroundColor: typeColor(t),
             data: names.map((n) => summary[n][t] || 0)
         }))
-    }, false);
+    }, false, 'totals');
 }
 
 async function applyRange() {
