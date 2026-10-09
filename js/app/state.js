@@ -8,7 +8,7 @@ export const state = {
     displayName: '',    // full name from the Microsoft profile, for the user menu
     isAdmin: false,
     config: null,
-    calendar: null,     // {groupId, name, canEdit}
+    calendar: null,     // {groupId, name}
     yearOwn: [],        // own events of the current calendar year, for the balance
     birthdays: null,    // {Name: 'YYYY-MM-DD'} of everyone, from the birthday calendar (null until loaded)
     birthdaysError: ''  // why the birthdays could not be loaded

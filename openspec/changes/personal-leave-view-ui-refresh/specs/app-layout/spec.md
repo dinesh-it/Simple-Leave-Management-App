@@ -123,7 +123,15 @@ The Team view SHALL show who is out today and who is out on each remaining worki
 - **THEN** today's panel says nobody is out
 
 ### Requirement: Team view – team leave list
-The Team view SHALL show a list of everyone's leave with columns for leave type, name, start date, day of week, dates covered and total days. It SHALL be filterable by person, leave type and date range, searchable by text, sortable by column, and downloadable to Excel. The download SHALL contain exactly the rows that match the current filters. The date range SHALL default to the current calendar year. The leave types listed in the config's `removeEvents` SHALL start deselected in the type filter.
+The Team view SHALL show a list of everyone's leave with columns for leave type, name, start date, day of week, dates covered and total days. It SHALL be filterable by person, leave type and date range, searchable by text, sortable by column, and downloadable to Excel. The download SHALL contain exactly the rows that match the current filters. The date range SHALL default to today until the end of the year, and the list SHALL show the leave in that range (leave still running on the From date included), soonest first. The leave types listed in the config's `removeEvents` SHALL start deselected in the type filter. The charts, the per-person summary and the monthly report SHALL count the whole calendar year(s) of the date range, filtered by person, type and search, and say which year they cover.
+
+#### Scenario: Leave from today by default
+- **WHEN** an admin opens the Team view on 7 October with leave in March and October
+- **THEN** From shows 7 October and To 31 December, the team list shows the October leave from 7 October on, soonest first, and the charts and the per-person summary still include March (whole year)
+
+#### Scenario: Past leave
+- **WHEN** the admin sets From to 1 January and applies the range
+- **THEN** the team list shows all leave of the year
 
 #### Scenario: Filter by person
 - **WHEN** an admin selects "Arun" in the person filter

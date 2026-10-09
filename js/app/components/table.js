@@ -81,12 +81,17 @@ export class LeaveTable {
         }
     }
 
+    // The rows of any list that match the current search text (no sorting)
+    matching(rows) {
+        if (!this.search) {
+            return rows;
+        }
+        return rows.filter((row) => this.columns.some((c) => String(c.value(row)).toLowerCase().indexOf(this.search) >= 0));
+    }
+
     // Rows matching the search, in the current sort order (all pages)
     filtered() {
-        let rows = this.rows;
-        if (this.search) {
-            rows = rows.filter((row) => this.columns.some((c) => String(c.value(row)).toLowerCase().indexOf(this.search) >= 0));
-        }
+        const rows = this.matching(this.rows);
         const col = this.column(this.sort.key);
         const sign = this.sort.dir == 'asc' ? 1 : -1;
         return rows.slice().sort((a, b) => {

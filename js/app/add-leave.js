@@ -192,8 +192,8 @@ function fail(message) {
 
 function review() {
     show($('#al-error'), false);
-    if (!state.calendar || !state.calendar.canEdit) {
-        fail('You do not have permission to add events to the calendar "' + (state.calendar ? state.calendar.name : '') + '"');
+    if (!state.calendar) {
+        fail('The leave calendar is not available, please reload the page.');
         return;
     }
     if (!state.user) {
@@ -278,7 +278,12 @@ async function confirm() {
         await refreshAll();
     } catch (e) {
         console.log('Failed to create event: ', e);
-        fail('Failed to add the event: ' + e.message);
+        if (e.status == 403) {
+            fail('Microsoft 365 did not allow adding events to the calendar "' + state.calendar.name + '". ' +
+                'You need to be a member of the "' + state.calendar.name + '" group (ask its owner). (' + e.message + ')');
+        } else {
+            fail('Failed to add the event: ' + e.message);
+        }
     } finally {
         btn.disabled = false;
     }

@@ -35,9 +35,9 @@ export async function init(views, params) {
     table = new LeaveTable($('#team-table', section), columns(), {
         label: 'Team leaves',
         pageSize: 50,
-        sort: { key: 'date', dir: 'desc' },
+        sort: { key: 'date', dir: 'asc' },
         rowClass: (row) => 'row-' + leave.highlight(row),
-        empty: () => 'No leave matches the filters'
+        empty: () => 'No leave in this date range matches the filters. Choose an earlier <strong>From</strong> date for past leave.'
     });
 
     // The Team leaves Person filter and the summary's Search person box follow each other
@@ -63,7 +63,7 @@ export async function init(views, params) {
             person.value = '';
             update();
         } else {
-            renderSummary(table.filtered());
+            renderSummary(table.matching(filteredRows));
         }
     });
     $('#summary-download', section).addEventListener('click', downloadSummary);
@@ -80,7 +80,7 @@ export async function init(views, params) {
     });
     $('#monthly-download').addEventListener('click', downloadMonthly);
     $('#monthly-modal').addEventListener('show.bs.modal', renderMonths);
-    onThemeChange(() => renderCharts(table.filtered()));
+    onThemeChange(() => renderCharts(table.matching(filteredRows)));
 
     if (params.get('search')) {
         $('#team-search', section).value = params.get('search');
@@ -119,7 +119,7 @@ function template() {
             <div class="card h-100">
                 <div class="card-header bg-transparent d-flex flex-wrap align-items-baseline gap-2">
                     <span class="fw-semibold me-auto"><i class="bi bi-bar-chart me-2 text-primary" aria-hidden="true"></i>Month wise</span>
-                    <span class="small text-body-secondary">follows the Team leaves filters</span>
+                    <span class="small text-body-secondary chart-scope"></span>
                 </div>
                 <div class="card-body"><div class="chart-box" id="chart-month-box"><canvas id="chart-month" aria-label="Leave days per month by type" role="img"></canvas></div>
                     <p class="text-body-secondary text-center my-5 d-none" id="chart-month-empty">No data</p></div>
@@ -152,7 +152,7 @@ function template() {
     <div class="card mb-4">
         <div class="card-header bg-transparent d-flex flex-wrap align-items-baseline gap-2">
             <span class="fw-semibold me-auto"><i class="bi bi-people me-2 text-primary" aria-hidden="true"></i>Person wise</span>
-            <span class="small text-body-secondary">follows the Team leaves filters</span>
+            <span class="small text-body-secondary chart-scope"></span>
         </div>
         <div class="card-body"><div class="chart-box" id="chart-person-box"><canvas id="chart-person" aria-label="Leave days per person by type" role="img"></canvas></div>
             <p class="text-body-secondary text-center my-5 d-none" id="chart-person-empty">No data</p></div>
@@ -204,7 +204,7 @@ function template() {
             <button type="button" class="btn btn-sm btn-outline-secondary text-nowrap" id="summary-download"><i class="bi bi-download me-1" aria-hidden="true"></i>Download</button>
         </div>
         <div class="card-body px-2">
-            <p class="small text-body-secondary mb-2 px-1">Days per type for the Team leaves filters. Click a person to show only their leave.</p>
+            <p class="small text-body-secondary mb-2 px-1"><span class="chart-scope-text"></span> Click a person to show only their leave.</p>
             <input type="search" class="form-control form-control-sm mb-3" id="summary-search" placeholder="Search person" aria-label="Search the per person summary">
             <div class="table-responsive" id="team-summary"></div>
         </div>
@@ -247,13 +247,19 @@ function columns() {
     ];
 }
 
+// The list's date range: today to the end of the year by default (or ?from= / ?to=)
 function initialRange(params) {
     const f = params.get('from') && moment(params.get('from'), 'MM/DD/YYYY', true);
     const t = params.get('to') && moment(params.get('to'), 'MM/DD/YYYY', true);
     if (f && t && f.isValid() && t.isValid() && !t.isBefore(f)) {
         return [f.startOf('day'), t.endOf('day')];
     }
-    return leave.yearRange();
+    return [moment().startOf('day'), moment().endOf('year')];
+}
+
+// The charts, the per person summary and the monthly report count the whole calendar year(s) of the range
+function yearsOf(r) {
+    return [r[0].clone().startOf('year'), r[1].clone().endOf('year')];
 }
 
 async function refresh() {
@@ -307,9 +313,15 @@ function outItem(o) {
 }
 
 async function loadList() {
+    const years = yearsOf(range);
+    const label = years[0].year() == years[1].year() ? String(years[0].year()) : years[0].year() + '–' + years[1].year();
+    $$('.chart-scope', section).forEach((el) => {
+        el.textContent = 'whole ' + label + ' · follows person, type and search';
+    });
+    $('.chart-scope-text', section).textContent = 'Days per type in ' + label + ' for the person, type and search filters.';
     try {
-        const { team } = await loadRange(range[0], range[1]);
-        rows = leave.toRows(team, range[0], range[1]);
+        const { team } = await loadRange(years[0], years[1]);
+        rows = leave.toRows(team, years[0], years[1]);
     } catch (e) {
         console.log('Failed to get events: ', e);
         rows = [];
@@ -329,17 +341,23 @@ function renderPeople() {
 }
 
 // Person and type filters, then the table applies the search; summary and charts use the same rows
+// Rows of the range that match the person and type filters (the search is applied by the table)
+let filteredRows = [];
+
+// The list shows the leave in the From - To range (leave still running on From included);
+// the charts and the per person summary count the whole year(s) of that range
 function update() {
     const person = $('#team-person', section).value;
     const types = checkedValues(section, 'team-type');
-    table.setRows(rows.filter((r) => (!person || r.name == person) && types.indexOf(leave.baseType(r.type)) >= 0));
+    filteredRows = rows.filter((r) => (!person || r.name == person) && types.indexOf(leave.baseType(r.type)) >= 0);
+    table.setRows(filteredRows.filter((r) => !r.last.isBefore(range[0], 'day') && !r.start.isAfter(range[1], 'day')));
     renderDerived();
 }
 
 function renderDerived() {
-    const filtered = table.filtered();
-    renderSummary(filtered);
-    renderCharts(filtered);
+    const all = table.matching(filteredRows);
+    renderSummary(all);
+    renderCharts(all);
 }
 
 // Types left out of the per person summary (comp-off is not counted there)
@@ -462,7 +480,7 @@ function download() {
 
 function renderMonths() {
     show($('#monthly-error'), false);
-    $('#monthly-year').textContent = range[0].format('YYYY');
+    $('#monthly-year').textContent = yearsOf(range)[0].format('YYYY');
     const last = moment().month() - 1;
     $('#monthly-months').innerHTML = moment.months().map((m, i) =>
         '<div class="col"><div class="form-check"><input class="form-check-input" type="checkbox" name="monthly-month" id="month-' + i + '" value="' + esc(m) + '"' +
@@ -478,5 +496,5 @@ function downloadMonthly() {
         $('#monthly-error').textContent = 'No records found, please select months that have leave.';
         return;
     }
-    downloadSheet('Leave-monthly-' + range[0].format('YYYY'), 'Monthly Leaves', sheet);
+    downloadSheet('Leave-monthly-' + yearsOf(range)[0].format('YYYY'), 'Monthly Leaves', sheet);
 }

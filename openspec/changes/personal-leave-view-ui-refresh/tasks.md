@@ -81,12 +81,16 @@
 
 - [x] 5.11 Readable charts with many people: every name on the person-wise axis (no skipping, slanted), only totals on the person-wise bars, a number on every month-wise segment, and tooltips listing the days per type and the total of a bar. Verify with the browser check on 27 and 50 people: all names, one total per person bar, all month segments numbered.
 
+- [x] 5.12 Team leaves date range defaults to today – 31 Dec (the From box shows today) and the list shows that range, soonest first; the charts, per-person summary and monthly report count the whole year(s) of the range and say so. Verify with the browser check: From 7 Oct, 6 rows, summary and charts still including earlier leave, all 12 rows with From 1 Jan.
+
 ## 6. Add Leave (`add-leave.js`)
 
 - [x] 6.1 Build the dialog with leave type, the quick date choices (Today/Tomorrow/Yesterday/Other, moving to the next working day on holidays or weekends), full/first half/second half, from/to/days kept in sync with native date inputs, location and description. Verify each control, including a Saturday "Today".
 - [x] 6.2 Add the remaining-balance hint and the after-request hint ("N remaining" / "N over limit (LOP)") using `computeBalance` and `userLimit`, plus holiday/weekend warnings on the from and to dates. Verify the spec scenarios (PL 4 remaining, 2 days → 2 remain; SL 1 remaining, 3 days → 2 over).
 - [x] 6.3 Add the review step (title, from, to, part of day, Confirm/Back) and create through `calendar.createEvent`. Then post to Slack, close the dialog, show a toast and refresh the year and visible ranges. Verify the stub receives one correct event, and a cancelled review creates none.
 - [x] 6.4 Lock the title for non-admins: no title field, and the title rebuilt as `[H]TYPE: <name>` just before create. Admins get an editable title. Verify that a non-admin with a forged title value still posts `TYPE: <name>`, and that an admin's edited title is kept.
+
+- [x] 6.5 Do not block Add Leave on the calendar's `canEdit` flag (Graph reports false for Microsoft 365 group calendars even to members who can add events): try to create the event, and on a 403 from Microsoft explain that group membership is needed. Move the "Consult the official leave records" note into the dialog body so Cancel and Review stay on one row. Verify with the browser checks (adding works with canEdit false, a 403 shows the message and creates nothing, buttons on one row).
 
 ## 7. Styling, theme and small screens
 
