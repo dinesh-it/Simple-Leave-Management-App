@@ -184,3 +184,21 @@ test('optional holidays: OPH in the calendar, OH in older configs', async () => 
     }
 });
 
+test("who's out second tab: rest of this week, or next week when none is left", () => {
+    const days = (d) => { const r = leave.laterDays(moment(d)); return [r.next, r.days.map((x) => x.format('ddd D'))]; };
+    // Wednesday: Thursday and Friday of this week
+    assert.deepEqual(days('2026-10-07'), [false, ['Thu 8', 'Fri 9']]);
+    // Friday, Saturday and Sunday: next Monday to Friday
+    assert.deepEqual(days('2026-10-09'), [true, ['Mon 12', 'Tue 13', 'Wed 14', 'Thu 15', 'Fri 16']]);
+    assert.deepEqual(days('2026-10-10'), [true, ['Mon 12', 'Tue 13', 'Wed 14', 'Thu 15', 'Fri 16']]);
+    assert.deepEqual(days('2026-10-11'), [true, ['Mon 12', 'Tue 13', 'Wed 14', 'Thu 15', 'Fri 16']]);
+    // Thursday 1 Oct, Friday 2 Oct is a holiday: next week
+    assert.deepEqual(days('2026-10-01'), [true, ['Mon 5', 'Tue 6', 'Wed 7', 'Thu 8', 'Fri 9']]);
+    // A holiday today (Fri 2 Oct) does not hide the days after it; here none are left, so next week
+    assert.deepEqual(days('2026-10-02'), [true, ['Mon 5', 'Tue 6', 'Wed 7', 'Thu 8', 'Fri 9']]);
+    // Next week's holidays are skipped (Fri 25 Dec)
+    assert.deepEqual(days('2026-12-18')[1], ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24']);
+    // Meena's PL from Fri 9 to Tue 13 shows on Monday and Tuesday of next week
+    assert.deepEqual(leave.whosOut(ROWS, moment('2026-10-12')).map((o) => o.name + ':' + o.type), ['Meena:PL']);
+});
+

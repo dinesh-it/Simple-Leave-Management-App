@@ -1,4 +1,4 @@
-// Sortable, searchable table with row highlighting and "Show more", replaces DataTables.
+// Sortable, searchable table with row highlighting and pagination, replaces DataTables.
 // Filters other than the text search are applied by the view before setRows().
 import { esc } from './ui.js';
 
@@ -13,8 +13,8 @@ export class LeaveTable {
         this.columns = columns;
         this.options = options;
         this.sort = options.sort || { key: columns[0].key, dir: 'asc' };
-        this.pageSize = options.pageSize || 50;
-        this.limit = this.pageSize;
+        this.pageSize = options.pageSize || 10;
+        this.page = 0;
         this.rows = [];
         this.search = '';
 
@@ -24,9 +24,17 @@ export class LeaveTable {
                 this.setSort(sortBtn.dataset.sort);
                 return;
             }
-            if (e.target.closest('[data-more]')) {
-                this.limit += this.pageSize;
-                this.render();
+            const pageBtn = e.target.closest('[data-page]');
+            if (pageBtn) {
+                if (!pageBtn.disabled) {
+                    this.page = +pageBtn.dataset.page;
+                    this.render();
+                    // Keep the keyboard focus on the pagination
+                    const again = this.container.querySelector('[data-page="' + this.page + '"]:not([data-step])');
+                    if (again) {
+                        again.focus();
+                    }
+                }
                 return;
             }
             const tr = e.target.closest('tr[data-index]');
@@ -49,13 +57,13 @@ export class LeaveTable {
 
     setRows(rows) {
         this.rows = rows;
-        this.limit = this.pageSize;
+        this.page = 0;
         this.render();
     }
 
     setSearch(text) {
         this.search = (text || '').trim().toLowerCase();
-        this.limit = this.pageSize;
+        this.page = 0;
         this.render();
     }
 
@@ -65,6 +73,7 @@ export class LeaveTable {
         } else {
             this.sort = { key, dir: 'asc' };
         }
+        this.page = 0;
         this.render();
         const btn = this.container.querySelector('[data-sort="' + key + '"]');
         if (btn) {
@@ -72,7 +81,7 @@ export class LeaveTable {
         }
     }
 
-    // Rows matching the search, in the current sort order (what the user sees, before "Show more")
+    // Rows matching the search, in the current sort order (all pages)
     filtered() {
         let rows = this.rows;
         if (this.search) {
@@ -93,9 +102,43 @@ export class LeaveTable {
         });
     }
 
+    // Previous, page numbers (first, last and the ones around the current page, gaps as "…"), Next
+    pagination(pages) {
+        if (pages < 2) {
+            return '';
+        }
+        const current = this.page;
+        const shown = [];
+        for (let i = 0; i < pages; i++) {
+            if (i == 0 || i == pages - 1 || Math.abs(i - current) <= 1) {
+                shown.push(i);
+            } else if (shown[shown.length - 1] !== '…') {
+                shown.push('…');
+            }
+        }
+        const item = (page, label, opts = {}) => {
+            if (page === '…') {
+                return '<li class="page-item disabled"><span class="page-link">…</span></li>';
+            }
+            const active = !opts.step && page == current;
+            return '<li class="page-item' + (active ? ' active' : '') + (opts.disabled ? ' disabled' : '') + '">' +
+                '<button type="button" class="page-link" data-page="' + page + '"' + (opts.step ? ' data-step' : '') +
+                (opts.disabled ? ' disabled' : '') + (active ? ' aria-current="page"' : '') +
+                (opts.aria ? ' aria-label="' + opts.aria + '"' : '') + '>' + label + '</button></li>';
+        };
+        return '<nav aria-label="' + esc((this.options.label || 'Table') + ' pages') + '"><ul class="pagination pagination-sm mb-0">' +
+            item(current - 1, '<i class="bi bi-chevron-left" aria-hidden="true"></i>', { step: true, disabled: current == 0, aria: 'Previous page' }) +
+            shown.map((p) => (p === '…' ? item(p) : item(p, String(p + 1), { aria: 'Page ' + (p + 1) }))).join('') +
+            item(current + 1, '<i class="bi bi-chevron-right" aria-hidden="true"></i>', { step: true, disabled: current == pages - 1, aria: 'Next page' }) +
+            '</ul></nav>';
+    }
+
     render() {
         const all = this.filtered();
-        this.visible = all.slice(0, this.limit);
+        const pages = Math.max(Math.ceil(all.length / this.pageSize), 1);
+        this.page = Math.min(Math.max(this.page, 0), pages - 1);
+        const first = this.page * this.pageSize;
+        this.visible = all.slice(first, first + this.pageSize);
         const hide = (c) => (c.hideXs ? ' d-none d-sm-table-cell' : '');
         const clickable = !!this.options.onRowClick;
 
@@ -121,13 +164,12 @@ export class LeaveTable {
             }).join('');
         }
 
-        const more = all.length > this.visible.length ?
-            '<button type="button" class="btn btn-sm btn-outline-secondary" data-more>Show more</button>' : '';
+        const info = all.length ? 'Showing ' + (first + 1) + '–' + (first + this.visible.length) + ' of ' + all.length : '';
         this.container.innerHTML =
             '<div class="table-responsive"><table class="table table-sm table-hover align-middle leave-table mb-0"' +
             (this.options.label ? ' aria-label="' + esc(this.options.label) + '"' : '') + '>' +
             '<thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></div>' +
-            '<div class="d-flex justify-content-between align-items-center gap-2 mt-2 small text-body-secondary">' +
-            '<span>' + (all.length ? 'Showing ' + this.visible.length + ' of ' + all.length : '') + '</span>' + more + '</div>';
+            '<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 small text-body-secondary">' +
+            '<span class="table-info">' + info + '</span>' + this.pagination(pages) + '</div>';
     }
 }

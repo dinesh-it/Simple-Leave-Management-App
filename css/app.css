@@ -350,8 +350,14 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 .summary-table td.cell-warning { --bs-table-bg-state: var(--hl-warning); }
 .summary-table td.cell-danger { --bs-table-bg-state: var(--hl-danger); }
 .summary-note {
+	margin-left: .3rem;
 	font-size: .7rem;
-	line-height: 1;
+	color: var(--bs-secondary-color);
+}
+/* Same row height in the Team leaves list and the per person summary */
+.leave-table > tbody > tr > *,
+.summary-table > tbody > tr > * {
+	height: 2.4rem;
 }
 .search-input {
 	max-width: 220px;
@@ -438,8 +444,47 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 }
 
 /* Who's out: tabs in the card header, long lists scroll inside the card (it is as tall as the month chart) */
-.whos-out-card .card-header-tabs .nav-link {
-	padding: .4rem .75rem;
+/* Underlined tabs like the view tabs in the top bar, the line sits on the header's bottom border */
+.whos-out-tabs {
+	gap: 1.25rem;
+	margin-bottom: -1px;
+	flex-wrap: nowrap;
+}
+.whos-out-tabs .nav-item {
+	display: flex;
+}
+.whos-out-tabs .nav-link {
+	display: flex;
+	align-items: center;
+	gap: .35rem;
+	padding: .6rem 0;
+	color: var(--bs-secondary-color);
+	font-weight: 500;
+	border-bottom-width: 2px;
+}
+.whos-out-tabs .nav-link:hover {
+	color: var(--bs-body-color);
+	border-bottom-color: transparent;
+}
+.whos-out-tabs .nav-link.active {
+	color: var(--bs-primary-text-emphasis);
+	border-bottom-color: var(--bs-primary);
+	font-weight: 600;
+}
+.whos-out-tabs .tab-date {
+	font-size: .8rem;
+	font-weight: 400;
+	color: var(--bs-secondary-color);
+}
+.whos-out-tabs .nav-link,
+.whos-out-card .card-header > span {
+	white-space: nowrap;
+}
+/* Phones: no room for the date next to Today */
+@media (max-width: 575.98px) {
+	.whos-out-tabs .tab-date {
+		display: none;
+	}
 }
 .whos-out-body {
 	max-height: 360px;

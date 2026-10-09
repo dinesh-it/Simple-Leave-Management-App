@@ -100,7 +100,7 @@ The "My leaves" list SHALL have columns for leave type, start date, day of week,
 - **THEN** the Upcoming list shows "No upcoming leave"
 
 ### Requirement: Team view – who's out
-The Team view SHALL show who is out today and who is out on each remaining working day of the current week, as two tabs ("Today", shown first, and "Later this week") of one Who's out card next to the month-wise chart. Each entry SHALL show the person's name and leave type and SHALL mark half days. Today's panel SHALL also show the number of people present in the office today: the configured total employees minus everyone with a leave or WFH event today (a half day counts as half), as the current "Today Present" gauge does.
+The Team view SHALL show who is out today and who is out on each remaining working day of the current week, as two tabs ("Today", shown first, and "Later this week") of one Who's out card next to the month-wise chart. When no working day is left in the current week (on a Friday, at the weekend, or before a Friday holiday), the second tab SHALL be "Next week" and SHALL show Monday to Friday of the next week (holidays skipped). Each entry SHALL show the person's name and leave type and SHALL mark half days. Today's panel SHALL also show the number of people present in the office today: the configured total employees minus everyone with a leave or WFH event today (a half day counts as half), as the current "Today Present" gauge does.
 
 #### Scenario: Out today
 - **WHEN** Arun has SL today and Priya has a first-half PL today
@@ -109,6 +109,14 @@ The Team view SHALL show who is out today and who is out on each remaining worki
 #### Scenario: Present count
 - **WHEN** total employees is 10, one person has SL today and one person has a half-day PL today
 - **THEN** today's panel shows 8.5 present
+
+#### Scenario: Friday shows next week
+- **WHEN** today is Friday and Meena has PL from Friday to the next Tuesday
+- **THEN** the second tab is "Next week" and lists Monday to Friday of next week, with Meena out on Monday and Tuesday
+
+#### Scenario: Weekend
+- **WHEN** today is Saturday
+- **THEN** the Today tab says it is not a working day and the "Next week" tab lists next week
 
 #### Scenario: Nobody out
 - **WHEN** nobody has leave today
@@ -130,7 +138,7 @@ The Team view SHALL show a list of everyone's leave with columns for leave type,
 - **THEN** the team list starts with HBD and LOP deselected in the type filter
 
 ### Requirement: Team view – per-person summary
-The Team view SHALL show a summary table with one row per person and one column per leave type, giving the days taken in the Team view's current filters. For leave types with a limit, each cell SHALL show the remaining days on hover or focus. Cells above 80% of the person's limit (including their extra allowance) SHALL be marked as a warning, and cells at or over 100% as danger. Selecting a person's row SHALL apply that person to the team list filter.
+The Team view SHALL show a summary table with one row per person and one column per leave type, giving the days taken in the Team view's current filters. For leave types with a limit, each cell SHALL show the remaining days on hover or focus. Cells above 80% of the person's limit (including their extra allowance) SHALL be marked as a warning, and cells at or over 100% as danger. Selecting a person's row SHALL apply that person to the team list filter. A search box SHALL filter the summary rows by person name.
 
 #### Scenario: Warning colour
 - **WHEN** a person has used 15 of 18 PL
@@ -139,6 +147,10 @@ The Team view SHALL show a summary table with one row per person and one column 
 #### Scenario: Over limit
 - **WHEN** a person has used 13 of 12 SL
 - **THEN** that person's SL cell is marked as danger and its details say 1 over the limit
+
+#### Scenario: Search a person
+- **WHEN** an admin types "mee" in the summary's search box
+- **THEN** only Meena's row is shown in the summary, and the team list is unchanged
 
 #### Scenario: Select a person
 - **WHEN** an admin selects Priya's row in the summary

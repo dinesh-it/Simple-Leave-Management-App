@@ -34,6 +34,7 @@ export async function init(views, params) {
 
     table = new LeaveTable($('#team-table', section), columns(), {
         label: 'Team leaves',
+        pageSize: 50,
         sort: { key: 'date', dir: 'desc' },
         rowClass: (row) => 'row-' + leave.highlight(row),
         empty: () => 'No leave matches the filters'
@@ -51,6 +52,7 @@ export async function init(views, params) {
     });
     $('#team-download', section).addEventListener('click', download);
     $('#team-summary', section).addEventListener('click', selectPerson);
+    $('#summary-search', section).addEventListener('input', () => renderSummary(table.filtered()));
     $('#team-summary', section).addEventListener('keydown', (e) => {
         if (e.key == 'Enter' || e.key == ' ') {
             e.preventDefault();
@@ -111,11 +113,11 @@ function template() {
         <div class="col-lg-6">
             <!-- Who's out: Today and Later this week as tabs of one card -->
             <div class="card h-100 whos-out-card">
-                <div class="card-header bg-transparent d-flex align-items-end gap-2 pb-0">
-                    <span class="fw-semibold me-2 pb-2"><i class="bi bi-person-x me-2 text-primary" aria-hidden="true"></i>Who's out</span>
-                    <ul class="nav nav-tabs card-header-tabs ms-auto" role="tablist">
+                <div class="card-header bg-transparent d-flex align-items-stretch gap-2 py-0">
+                    <span class="fw-semibold me-2 py-2 d-flex align-items-center"><i class="bi bi-person-x me-2 text-primary" aria-hidden="true"></i>Who's out</span>
+                    <ul class="nav nav-underline whos-out-tabs ms-auto" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="out-tab-today" data-bs-toggle="tab" data-bs-target="#out-today" type="button" role="tab" aria-controls="out-today" aria-selected="true">Today <span class="text-body-secondary small">${esc(moment().format('ddd, D MMM'))}</span></button>
+                            <button class="nav-link active" id="out-tab-today" data-bs-toggle="tab" data-bs-target="#out-today" type="button" role="tab" aria-controls="out-today" aria-selected="true">Today <span class="tab-date">${esc(moment().format('ddd, D MMM'))}</span></button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="out-tab-week" data-bs-toggle="tab" data-bs-target="#out-week-pane" type="button" role="tab" aria-controls="out-week-pane" aria-selected="false">Later this week</button>
@@ -141,7 +143,9 @@ function template() {
             <p class="text-body-secondary text-center my-5 d-none" id="chart-person-empty">No data</p></div>
     </div>
 
-    <div class="card mb-4">
+    <div class="row g-4">
+    <div class="col-xl-8">
+    <div class="card h-100">
         <div class="card-header bg-transparent d-flex flex-wrap align-items-center gap-2">
             <span class="fw-semibold me-auto"><i class="bi bi-list-ul me-2 text-primary" aria-hidden="true"></i>Team leaves</span>
             ${legend()}
@@ -176,10 +180,17 @@ function template() {
             <div id="team-table"></div>
         </div>
     </div>
+    </div>
 
-    <div class="card">
-        <div class="card-header bg-transparent fw-semibold"><i class="bi bi-table me-2 text-primary" aria-hidden="true"></i>Per person (days, current filters)</div>
-        <div class="card-body p-0"><div class="table-responsive" id="team-summary"></div></div>
+    <div class="col-xl-4">
+    <div class="card h-100">
+        <div class="card-header bg-transparent fw-semibold"><i class="bi bi-table me-2 text-primary" aria-hidden="true"></i>Per person <span class="fw-normal small text-body-secondary">(days, current filters)</span></div>
+        <div class="card-body">
+            <input type="search" class="form-control form-control-sm mb-3" id="summary-search" placeholder="Search person" aria-label="Search the per person summary">
+            <div class="table-responsive" id="team-summary"></div>
+        </div>
+    </div>
+    </div>
     </div>`;
 }
 
@@ -234,40 +245,41 @@ async function renderWhosOut() {
     const today = moment().startOf('day');
     const todayBox = $('#out-today', section);
     const weekBox = $('#out-week', section);
-    const days = leave.restOfWeek(today);
-    if (today.day() == 0 || today.day() == 6) {
-        todayBox.innerHTML = '<p class="text-body-secondary mb-0">Today is not a working day.</p>';
-        weekBox.innerHTML = '<li class="list-group-item text-body-secondary">Nothing more this week</li>';
-        return;
-    }
-    const to = today.clone().day(5).endOf('day');
-    let weekRows = [];
+    const later = leave.laterDays(today);
+    $('#out-tab-week', section).textContent = later.next ? 'Next week' : 'Later this week';
+
+    const last = later.days.length ? later.days[later.days.length - 1] : today;
+    const to = last.clone().endOf('day');
+    let rows = [];
     try {
-        weekRows = leave.toRows((await loadRange(today, to)).team, today, to);
+        rows = leave.toRows((await loadRange(today, to)).team, today, to);
     } catch (e) {
         console.log("Failed to get this week's leave: ", e);
         todayBox.innerHTML = '<p class="text-danger mb-0">Could not load who is out</p>';
         return;
     }
 
-    const out = leave.whosOut(weekRows, today);
-    const total = state.config.totalEmps;
-    const holiday = !today.isBusinessDay();
-    todayBox.innerHTML = (holiday ? '<p class="text-body-secondary">Today is a holiday.</p>' : '') +
-        `<div class="d-flex align-items-baseline gap-2 mb-3">
-            <span class="present-value">${esc(fmt(leave.presentCount(total, out)))}</span>
-            <span class="text-body-secondary">of ${esc(total)} in the office</span>
-        </div>` +
-        (out.length ? '<ul class="list-unstyled mb-0 out-list">' + out.map(outItem).join('') + '</ul>' :
-            '<p class="text-body-secondary mb-0">Nobody is out today</p>');
+    if (today.day() == 0 || today.day() == 6) {
+        todayBox.innerHTML = '<p class="text-body-secondary mb-0">Today is not a working day.</p>';
+    } else {
+        const out = leave.whosOut(rows, today);
+        const total = state.config.totalEmps;
+        const holiday = !today.isBusinessDay();
+        todayBox.innerHTML = (holiday ? '<p class="text-body-secondary">Today is a holiday.</p>' : '') +
+            `<div class="d-flex align-items-baseline gap-2 mb-3">
+                <span class="present-value">${esc(fmt(leave.presentCount(total, out)))}</span>
+                <span class="text-body-secondary">of ${esc(total)} in the office</span>
+            </div>` +
+            (out.length ? '<ul class="list-unstyled mb-0 out-list">' + out.map(outItem).join('') + '</ul>' :
+                '<p class="text-body-secondary mb-0">Nobody is out today</p>');
+    }
 
-    const later = days.slice(1).map((day) => {
-        const list = leave.whosOut(weekRows, day);
+    weekBox.innerHTML = later.days.map((day) => {
+        const list = leave.whosOut(rows, day);
         return `<li class="list-group-item"><div class="fw-semibold small mb-1">${esc(day.format('dddd, D MMM'))}</div>` +
             (list.length ? '<ul class="list-unstyled mb-0 out-list">' + list.map(outItem).join('') + '</ul>' :
                 '<span class="text-body-secondary small">Nobody is out</span>') + '</li>';
-    });
-    weekBox.innerHTML = later.join('') || '<li class="list-group-item text-body-secondary">Nothing more this week</li>';
+    }).join('') || '<li class="list-group-item text-body-secondary">No working days ' + (later.next ? 'next week' : 'left this week') + '</li>';
 }
 
 function outItem(o) {
@@ -313,16 +325,22 @@ function renderDerived() {
 
 function renderSummary(filtered) {
     const summary = leave.personSummary(filtered);
+    const search = $('#summary-search', section).value.trim().toLowerCase();
     const names = Object.keys(summary).sort((a, b) => a.localeCompare(b));
+    const shown = names.filter((n) => n.toLowerCase().indexOf(search) >= 0);
     const types = typeOrder(state.config, Array.from(new Set(filtered.map((r) => leave.baseType(r.type)))));
     const box = $('#team-summary', section);
     if (!names.length) {
         box.innerHTML = '<p class="text-body-secondary text-center my-4">No leave matches the filters</p>';
         return;
     }
+    if (!shown.length) {
+        box.innerHTML = '<p class="text-body-secondary text-center my-4">No person matches "' + esc(search) + '"</p>';
+        return;
+    }
     const limits = state.config.eventLimits || {};
     const head = '<tr><th scope="col">Person</th>' + types.map((t) => '<th scope="col" class="text-end">' + esc(t == '-' ? 'Other' : t) + '</th>').join('') + '</tr>';
-    const body = names.map((name) => {
+    const body = shown.map((name) => {
         const cells = types.map((t) => {
             const v = summary[name][t] || 0;
             if (!limits[t]) {
@@ -334,8 +352,9 @@ function renderSummary(filtered) {
             const note = remain < 0 ? fmt(-remain) + ' over' : fmt(remain) + ' left';
             const title = t + ' : ' + name + '\nTaken / applied: ' + fmt(v) + ' of ' + fmt(limit) +
                 (remain < 0 ? '\nOver the limit by ' + fmt(-remain) : '\nRemaining: ' + fmt(remain));
-            return '<td class="text-end cell-' + usage + '" title="' + esc(title) + '">' + esc(fmt(v)) +
-                '<div class="small text-body-secondary summary-note">' + esc(note) + '</div></td>';
+            // The note stays on the same line, so rows are as high as the Team leaves rows
+            return '<td class="text-end text-nowrap cell-' + usage + '" title="' + esc(title) + '">' + esc(fmt(v)) +
+                '<span class="summary-note">· ' + esc(note) + '</span></td>';
         }).join('');
         return '<tr data-person="' + esc(name) + '" tabindex="0" role="button" aria-label="Show ' + esc(name) + "'s leave\">" +
             '<th scope="row">' + esc(name) + '</th>' + cells + '</tr>';

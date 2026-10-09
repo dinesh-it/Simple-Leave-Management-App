@@ -50,7 +50,7 @@
 
 - [x] 4.1 Add the balance cards: one per `eventLimits` type, with used, remaining or "N over limit", "of <limit>", a progress bar, and warning (>80%) / danger (≥100%) styles, from `yearOwnEvents` only. Verify the spec scenarios, and that changing the range does not change the cards.
 - [x] 4.2 Add the Upcoming list (next 5 own leaves from today, with today/tomorrow badges) and "No upcoming leave". Verify with and without upcoming stub events.
-- [x] 4.3 Add "My leaves" with the table component (`components/table.js`): sort, text search, type checkboxes, From/To date inputs and Apply, the today/tomorrow/future highlight and legend, "Show more" after 50 rows, and the empty state with the naming rule. Verify only own rows for both roles, and that search and clearing filters never show others.
+- [x] 4.3 Add "My leaves" with the table component (`components/table.js`): sort, text search, type checkboxes, From/To date inputs and Apply, the today/tomorrow/future highlight and legend, pagination (10 rows per page), and the empty state with the naming rule. Verify only own rows for both roles, and that search and clearing filters never show others.
 - [x] 4.4 Add Excel download of My leaves from the filtered rows (`export.js`). Verify the downloaded file has exactly the visible filtered rows.
 
 - [x] 4.5 Add a "Leave days per month" chart to the Personal view, next to Upcoming:
@@ -62,10 +62,16 @@
 ## 5. Team view (`views/team.js`, admins only)
 
 - [x] 5.1 Add the Who's out card, with Today and Later this week as tabs: today (names, types, half-day marks, present count = `totalEmps` minus people out) and each remaining working day of the week, with "Nobody is out". Verify the spec scenarios with today's stub events.
-- [x] 5.2 Add the team list: person select, type checkboxes (`removeEvents` deselected), From/To, text search, sort, highlight, "Show more" and filtered Excel download. Verify the person filter, the default type filter and that the download matches the filter.
+- [x] 5.2 Add the team list: person select, type checkboxes (`removeEvents` deselected), From/To, text search, sort, highlight, pagination and filtered Excel download. Verify the person filter, the default type filter and that the download matches the filter.
 - [x] 5.3 Add the per-person summary from the filtered rows: days per type, remaining on hover/focus, warning/danger against each person's limit, and selecting a row sets the person filter. Verify the spec scenarios.
 - [x] 5.4 Add the Chart.js month-wise (stacked) and person-wise (stacked) charts, at the top of the Team view (month-wise next to the Who's out card, person-wise full width below), from the filtered rows, with fixed colours per type and a "No data" state. Verify that the charts change with the SL filter and show "No data" for an empty filter.
 - [x] 5.5 Add the Monthly report dialog: month checkboxes for the listed year (last month preselected), xlsx download built from `monthlyReport`, and "No records found" when empty. Verify a file is downloaded for a month with data and none for an empty month.
+
+- [x] 5.6 Show next week in the second Who's out tab when this week has no working day left (Friday, weekend, before a Friday holiday), labelled "Next week". Verify with `node --test` (Wed, Fri, Sat, Sun, Thursday before a holiday, next week with a holiday) and the browser check on a Friday and a Saturday.
+
+- [x] 5.7 Place the Team leaves list and the per-person summary side by side (two thirds / one third, from `xl`), and replace "Show more" with pagination in the table component (50 rows per page in the Team list, 10 in My leaves). Verify with the browser check: side by side at 1280px, page 2 of a 60+ row team list and of My leaves, back to page 1 after a filter change, summary and download still cover all matching rows.
+
+- [x] 5.8 Add a person search box to the per-person summary, and give its rows the same height as the Team leaves rows (the "N left" note on the same line). Verify with the browser check: "mee" shows only Meena, clearing it shows everyone, and the first rows of both tables are equally high.
 
 ## 6. Add Leave (`add-leave.js`)
 

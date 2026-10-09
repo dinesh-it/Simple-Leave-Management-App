@@ -396,6 +396,18 @@ export function restOfWeek(day) {
     return days;
 }
 
+// Working days after today for the second Who's out tab: the rest of this week, or all of next week
+// when this week has no working day left (Friday, the weekend, or before a Friday holiday).
+// {next: false|true, days: [moments]}
+export function laterDays(day) {
+    const today = day.clone().startOf('day');
+    const rest = restOfWeek(today).filter((d) => d.isAfter(today, 'day'));
+    if (rest.length) {
+        return { next: false, days: rest };
+    }
+    return { next: true, days: restOfWeek(today.clone().add(1, 'week').startOf('isoWeek')) };
+}
+
 // 'today' (covers today) | 'tomorrow' (starts tomorrow) | 'future' (starts later) | ''
 export function highlight(row, now) {
     const today = moment(now).startOf('day');

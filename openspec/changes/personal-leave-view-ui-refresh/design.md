@@ -51,7 +51,7 @@ Requirements are in `specs/personal-leave-view/spec.md` and `specs/app-layout/sp
 *Alternatives:*
 - Use a CDN: rejected, so the app keeps working where CDNs are blocked and matches the current self-hosting.
 - Replace moment with our own business-day helpers: rejected for now. Any small difference in counting would change people's balances. moment is isolated in `leave.js`, so it can be swapped later behind the tests.
-- Keep DataTables 2: rejected per the user's choice of plain JS. The tables needed here (sort, filter, "show more", export) are small.
+- Keep DataTables 2: rejected per the user's choice of plain JS. The tables needed here (sort, filter, pagination, export) are small.
 
 ### 2. Code structure: ES modules under `js/app/`
 `index.html` loads the classic scripts first, because they define globals and the MSAL bridge has to run before anything else: `data.js`, `msgraph.js`, `slack.js`, moment, moment-business-days, excellentexport, bootstrap.bundle and chart.js. It then loads `<script type="module" src="js/app/main.js">`.
@@ -65,7 +65,7 @@ Requirements are in `specs/personal-leave-view/spec.md` and `specs/app-layout/sp
 | `state.js` | Small store: `user`, `isAdmin`, `config`, `ownEvents`, `teamEvents` (admins only), `yearOwnEvents`. Views subscribe and re-render when it changes |
 | `views/personal.js` | Balance cards, Upcoming, My leaves |
 | `views/team.js` | Who's out, team list and filters, summary, charts, monthly report |
-| `components/table.js` | Sortable, filterable table with row highlighting and "show more" |
+| `components/table.js` | Sortable, filterable table with row highlighting and pagination |
 | `components/ui.js` | `esc()`, alert and toast helpers, modal helpers, the loading indicator |
 | `add-leave.js` | Add Leave dialog logic |
 | `export.js` | Excel export from row arrays |
@@ -100,7 +100,7 @@ The Personal view only ever reads `ownEvents`, and the Team view only reads `tea
 - Clicking a column header sorts the table, with `aria-sort` set.
 - Text search runs over the visible columns.
 - External filters (type checkboxes, person select, range) are applied before the component gets the rows.
-- The first 50 rows are shown, with a "Show more" button for the rest.
+- Rows are paginated (10 per page in My leaves, 50 in the Team list), with "Showing 1–10 of N" and Previous / page numbers / Next (long ranges collapse to "…"). Changing a filter, the search or the sort goes back to page 1.
 - The table returns the filtered rows, so the Excel export, the summary and the charts all use exactly the rows that match.
 
 ### 7. Excel export
@@ -109,7 +109,7 @@ The Personal view only ever reads `ownEvents`, and the Team view only reads `tea
 ### 8. Charts
 The chart code is in `components/charts.js`, shared by both views. Chart.js bar charts, `stacked: true`, one dataset per leave type with a fixed colour per type, so a type has the same colour in both charts:
 - **Month-wise:** Jan–Dec, days per type.
-- **Person-wise:** vertical bars, one per person (most days first), days per type. At the top of the Team view, the month-wise chart takes the left half next to the Who's out card (Today / Later this week tabs), and the person-wise chart is full width below them.
+- **Person-wise:** vertical bars, one per person (most days first), days per type. At the top of the Team view, the month-wise chart takes the left half next to the Who's out card (Today / Later this week tabs), and the person-wise chart is full width below them. Below the charts, the Team leaves list (two thirds) and the per-person summary (one third) are side by side on wide screens.
 
 Both are built from the team list's filtered rows. The Personal view has the same month-wise chart for the user's own rows, built from what My leaves shows. Chart instances are destroyed and recreated when the filters change. Chart colours read Bootstrap CSS variables, so dark mode stays readable.
 
