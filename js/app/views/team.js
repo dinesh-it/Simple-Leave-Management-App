@@ -5,13 +5,13 @@ import * as leave from '../leave.js';
 import { LeaveTable } from '../components/table.js';
 import { downloadSheet } from '../export.js';
 import { legend } from './personal.js';
+import { drawBarChart, monthChartData, typeColor, typeOrder, onThemeChange } from '../components/charts.js';
 import { $, $$, esc, fmt, show, typeToggles, checkedValues, typeBadge, dateValue, parseDateInput, showAlert } from '../components/ui.js';
 
 let section;
 let table;
 let range;
 let rows = [];
-let charts = {};
 let visible = false;
 
 export async function init(views, params) {
@@ -63,7 +63,7 @@ export async function init(views, params) {
     });
     $('#monthly-download').addEventListener('click', downloadMonthly);
     $('#monthly-modal').addEventListener('show.bs.modal', renderMonths);
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => renderCharts(table.filtered()));
+    onThemeChange(() => renderCharts(table.filtered()));
 
     if (params.get('search')) {
         $('#team-search', section).value = params.get('search');
@@ -78,7 +78,12 @@ export function setVisible(v) {
     visible = v;
     show(section, v);
     if (v) {
-        Object.values(charts).forEach((c) => c.resize());
+        ['#chart-month', '#chart-person'].forEach((id) => {
+            const chart = Chart.getChart($(id, section));
+            if (chart) {
+                chart.resize();
+            }
+        });
     }
 }
 
@@ -93,21 +98,47 @@ function template() {
     </div>
 
     <div class="row g-4 mb-4">
-        <div class="col-lg-5">
+        <div class="col-lg-6">
             <div class="card h-100">
-                <div class="card-header bg-transparent fw-semibold d-flex align-items-center">
-                    <i class="bi bi-person-x me-2 text-primary" aria-hidden="true"></i>Who's out today
-                    <span class="ms-auto small text-body-secondary fw-normal">${esc(moment().format('ddd, D MMM'))}</span>
+                <div class="card-header bg-transparent d-flex flex-wrap align-items-baseline gap-2">
+                    <span class="fw-semibold me-auto"><i class="bi bi-bar-chart me-2 text-primary" aria-hidden="true"></i>Month wise</span>
+                    <span class="small text-body-secondary">follows the Team leaves filters</span>
                 </div>
-                <div class="card-body" id="out-today" aria-live="polite"></div>
+                <div class="card-body"><div class="chart-box" id="chart-month-box"><canvas id="chart-month" aria-label="Leave days per month by type" role="img"></canvas></div>
+                    <p class="text-body-secondary text-center my-5 d-none" id="chart-month-empty">No data</p></div>
             </div>
         </div>
-        <div class="col-lg-7">
-            <div class="card h-100">
-                <div class="card-header bg-transparent fw-semibold"><i class="bi bi-calendar-week me-2 text-primary" aria-hidden="true"></i>Later this week</div>
-                <ul class="list-group list-group-flush" id="out-week"></ul>
+        <div class="col-lg-6">
+            <!-- Who's out: Today and Later this week as tabs of one card -->
+            <div class="card h-100 whos-out-card">
+                <div class="card-header bg-transparent d-flex align-items-end gap-2 pb-0">
+                    <span class="fw-semibold me-2 pb-2"><i class="bi bi-person-x me-2 text-primary" aria-hidden="true"></i>Who's out</span>
+                    <ul class="nav nav-tabs card-header-tabs ms-auto" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="out-tab-today" data-bs-toggle="tab" data-bs-target="#out-today" type="button" role="tab" aria-controls="out-today" aria-selected="true">Today <span class="text-body-secondary small">${esc(moment().format('ddd, D MMM'))}</span></button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="out-tab-week" data-bs-toggle="tab" data-bs-target="#out-week-pane" type="button" role="tab" aria-controls="out-week-pane" aria-selected="false">Later this week</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="tab-content whos-out-body">
+                    <div class="tab-pane fade show active card-body" id="out-today" role="tabpanel" aria-labelledby="out-tab-today" tabindex="0" aria-live="polite"></div>
+                    <div class="tab-pane fade" id="out-week-pane" role="tabpanel" aria-labelledby="out-tab-week" tabindex="0">
+                        <ul class="list-group list-group-flush" id="out-week"></ul>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-transparent d-flex flex-wrap align-items-baseline gap-2">
+            <span class="fw-semibold me-auto"><i class="bi bi-people me-2 text-primary" aria-hidden="true"></i>Person wise</span>
+            <span class="small text-body-secondary">follows the Team leaves filters</span>
+        </div>
+        <div class="card-body"><div class="chart-box" id="chart-person-box"><canvas id="chart-person" aria-label="Leave days per person by type" role="img"></canvas></div>
+            <p class="text-body-secondary text-center my-5 d-none" id="chart-person-empty">No data</p></div>
     </div>
 
     <div class="card mb-4">
@@ -146,25 +177,9 @@ function template() {
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-xl-5">
-            <div class="card">
-                <div class="card-header bg-transparent fw-semibold"><i class="bi bi-table me-2 text-primary" aria-hidden="true"></i>Per person (days, current filters)</div>
-                <div class="card-body p-0"><div class="table-responsive" id="team-summary"></div></div>
-            </div>
-        </div>
-        <div class="col-xl-7">
-            <div class="card mb-4">
-                <div class="card-header bg-transparent fw-semibold"><i class="bi bi-bar-chart me-2 text-primary" aria-hidden="true"></i>Month wise</div>
-                <div class="card-body"><div class="chart-box" style="height: 260px"><canvas id="chart-month" aria-label="Leave days per month by type" role="img"></canvas></div>
-                    <p class="text-body-secondary text-center my-5 d-none" id="chart-month-empty">No data</p></div>
-            </div>
-            <div class="card">
-                <div class="card-header bg-transparent fw-semibold"><i class="bi bi-bar-chart-steps me-2 text-primary" aria-hidden="true"></i>Person wise</div>
-                <div class="card-body"><div class="chart-box" id="chart-person-box"><canvas id="chart-person" aria-label="Leave days per person by type" role="img"></canvas></div>
-                    <p class="text-body-secondary text-center my-5 d-none" id="chart-person-empty">No data</p></div>
-            </div>
-        </div>
+    <div class="card">
+        <div class="card-header bg-transparent fw-semibold"><i class="bi bi-table me-2 text-primary" aria-hidden="true"></i>Per person (days, current filters)</div>
+        <div class="card-body p-0"><div class="table-responsive" id="team-summary"></div></div>
     </div>`;
 }
 
@@ -296,19 +311,10 @@ function renderDerived() {
     renderCharts(filtered);
 }
 
-function typeOrder(types) {
-    const order = (state.config.typeFilter || []);
-    return types.sort((a, b) => {
-        const x = order.indexOf(a);
-        const y = order.indexOf(b);
-        return (x < 0 ? 99 : x) - (y < 0 ? 99 : y);
-    });
-}
-
 function renderSummary(filtered) {
     const summary = leave.personSummary(filtered);
     const names = Object.keys(summary).sort((a, b) => a.localeCompare(b));
-    const types = typeOrder(Array.from(new Set(filtered.map((r) => leave.baseType(r.type)))));
+    const types = typeOrder(state.config, Array.from(new Set(filtered.map((r) => leave.baseType(r.type)))));
     const box = $('#team-summary', section);
     if (!names.length) {
         box.innerHTML = '<p class="text-body-secondary text-center my-4">No leave matches the filters</p>';
@@ -347,73 +353,26 @@ function selectPerson(e) {
     $('#team-table', section).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function cssVar(name) {
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
-
-function typeColor(t) {
-    return cssVar('--type-' + (t == '-' ? 'other' : t)) || cssVar('--type-other');
-}
-
-function chartOptions(horizontal) {
-    const text = cssVar('--bs-body-color');
-    const grid = cssVar('--bs-border-color-translucent');
-    const axis = { stacked: true, ticks: { color: text }, grid: { color: grid } };
-    return {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        indexAxis: horizontal ? 'y' : 'x',
-        plugins: {
-            legend: { position: 'bottom', labels: { color: text, boxWidth: 12 } },
-            tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + fmt(ctx.parsed[horizontal ? 'x' : 'y']) + ' day(s)' } }
-        },
-        scales: {
-            x: Object.assign({ beginAtZero: true }, axis),
-            y: Object.assign({ beginAtZero: true }, axis)
-        }
-    };
-}
-
-function drawChart(id, data, horizontal) {
-    if (charts[id]) {
-        charts[id].destroy();
-        delete charts[id];
-    }
-    const empty = !data.datasets.length;
-    show($('#' + id, section).parentElement, !empty);
-    show($('#' + id + '-empty', section), empty);
-    if (!empty) {
-        charts[id] = new Chart($('#' + id, section), { type: 'bar', data, options: chartOptions(horizontal) });
-    }
-}
-
 function renderCharts(filtered) {
     const leaveRows = filtered.filter((r) => leave.isLeaveType(r.type));
-    const types = typeOrder(Array.from(new Set(leaveRows.map((r) => leave.baseType(r.type)))));
-
-    const totals = leave.monthlyTotals(leaveRows);
-    drawChart('chart-month', {
-        labels: moment.monthsShort(),
-        datasets: types.map((t) => ({
-            label: t,
-            backgroundColor: typeColor(t),
-            data: moment.monthsShort().map((m, i) => (totals[i] && totals[i][t]) || 0)
-        }))
-    }, false);
-
+    const types = typeOrder(state.config, Array.from(new Set(leaveRows.map((r) => leave.baseType(r.type)))));
     const summary = leave.personSummary(leaveRows);
     const total = (n) => Object.values(summary[n]).reduce((a, b) => a + b, 0);
     const names = Object.keys(summary).sort((a, b) => total(b) - total(a) || a.localeCompare(b));
-    $('#chart-person-box', section).style.height = Math.max(160, names.length * 28 + 70) + 'px';
-    drawChart('chart-person', {
+
+    // Both charts are vertical bars: month wise next to Who's out, person wise full width
+    $('#chart-person-box', section).style.height = '300px';
+    $('#chart-month-box', section).style.height = '300px';
+
+    drawBarChart($('#chart-month', section), $('#chart-month-empty', section), monthChartData(state.config, filtered), false);
+    drawBarChart($('#chart-person', section), $('#chart-person-empty', section), {
         labels: names,
         datasets: types.map((t) => ({
             label: t,
             backgroundColor: typeColor(t),
             data: names.map((n) => summary[n][t] || 0)
         }))
-    }, true);
+    }, false);
 }
 
 async function applyRange() {

@@ -381,9 +381,20 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 	border-top-color: var(--bs-danger);
 	background: var(--hl-danger);
 }
-.balance-main {
-	color: var(--bs-secondary-color);
-	margin: .25rem 0 .5rem;
+.balance-stats {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	margin-bottom: .75rem;
+}
+/* Taken and Available each get half of the card, with a divider between them */
+.balance-stat + .balance-stat {
+	border-left: 1px solid var(--bs-border-color);
+	padding-left: 1.25rem;
+}
+.balance-stat {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
 }
 .balance-value {
 	color: var(--bs-body-color);
@@ -391,7 +402,28 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 	font-weight: 700;
 	line-height: 1.1;
 }
-.balance-card.is-danger .balance-value {
+.balance-label {
+	white-space: nowrap;
+	color: var(--bs-secondary-color);
+	font-size: .75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+}
+/* Taken in the type's colour, Available in the normal text colour */
+.balance-taken .balance-value { color: var(--type-other); }
+.balance-card[data-type="PL"] .balance-taken .balance-value { color: var(--type-PL); }
+.balance-card[data-type="SL"] .balance-taken .balance-value { color: var(--type-SL); }
+.balance-card[data-type="OPH"] .balance-taken .balance-value { color: var(--type-OPH); }
+.balance-card[data-type="WFH"] .balance-taken .balance-value { color: var(--type-WFH); }
+.balance-card[data-type="ML"] .balance-taken .balance-value { color: var(--type-ML); }
+.balance-card[data-type="PTL"] .balance-taken .balance-value { color: var(--type-PTL); }
+.balance-card[data-type="MTL"] .balance-taken .balance-value { color: var(--type-MTL); }
+.balance-card[data-type="CO"] .balance-taken .balance-value { color: var(--type-CO); }
+.balance-card[data-type="RL"] .balance-taken .balance-value { color: var(--type-RL); }
+.balance-card[data-type="LOP"] .balance-taken .balance-value { color: var(--type-LOP); }
+.balance-over .balance-value,
+.balance-over .balance-label {
 	color: var(--bs-danger-text-emphasis);
 }
 .balance-card .progress {
@@ -405,6 +437,14 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 	background: var(--bs-danger);
 }
 
+/* Who's out: tabs in the card header, long lists scroll inside the card (it is as tall as the month chart) */
+.whos-out-card .card-header-tabs .nav-link {
+	padding: .4rem .75rem;
+}
+.whos-out-body {
+	max-height: 360px;
+	overflow-y: auto;
+}
 /* Who's out */
 .present-value {
 	font-size: 2.25rem;
@@ -421,8 +461,9 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 /* Small screens */
 @media (max-width: 575.98px) {
 	.balance-value {
-		font-size: 1.5rem;
+		font-size: 1.6rem;
 	}
+
 	.search-input {
 		max-width: none;
 		width: 100%;

@@ -77,8 +77,8 @@ Notes on Slack:
 
 ## Leave visibility
 
-* **Personal view** (everyone, admins included): only your own leave. It shows the *My leave balance* cards, your upcoming
-  leave and *My leaves* with filters, search and Excel download. Searching or clearing filters never shows anyone else.
+* **Personal view** (everyone, admins included): only your own leave. It shows the *My leave balance* cards (taken and
+  available), your upcoming leave, a *Leave days per month* chart and *My leaves* with filters, search and Excel download. Searching or clearing filters never shows anyone else.
 * **Team view** (admins only, users whose first name is a key in `adminNames`):
   * *Who's out* today and for the rest of the week
   * the team leave list with person, type and date range filters, search and Excel download

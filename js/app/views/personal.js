@@ -3,6 +3,7 @@ import { state, loadRange, onRefresh } from '../state.js';
 import * as leave from '../leave.js';
 import { LeaveTable } from '../components/table.js';
 import { downloadSheet } from '../export.js';
+import { drawBarChart, monthChartData, onThemeChange } from '../components/charts.js';
 import { $, esc, fmt, typeToggles, checkedValues, typeBadge, dateValue, parseDateInput, showAlert } from '../components/ui.js';
 
 const UPCOMING_COUNT = 5;
@@ -31,7 +32,11 @@ export async function init(container, params) {
     });
 
     $('#my-types', root).addEventListener('change', renderList);
-    $('#my-search', root).addEventListener('input', (e) => table.setSearch(e.target.value));
+    $('#my-search', root).addEventListener('input', (e) => {
+        table.setSearch(e.target.value);
+        renderChart();
+    });
+    onThemeChange(renderChart);
     $('#my-range', root).addEventListener('submit', (e) => {
         e.preventDefault();
         applyRange();
@@ -58,9 +63,9 @@ function template() {
     </div>
 
     <h2 class="h6 text-uppercase text-body-secondary fw-semibold mb-2">My leave balance <span class="fw-normal">${esc(moment().format('YYYY'))}</span></h2>
-    <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3 mb-4" id="balance-cards"></div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-3 mb-4" id="balance-cards"></div>
 
-    <div class="row g-4">
+    <div class="row g-4 mb-4">
         <div class="col-lg-4">
             <div class="card h-100">
                 <div class="card-header bg-transparent fw-semibold"><i class="bi bi-calendar-event me-2 text-primary" aria-hidden="true"></i>Upcoming</div>
@@ -68,6 +73,21 @@ function template() {
             </div>
         </div>
         <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header bg-transparent d-flex flex-wrap align-items-baseline gap-2">
+                    <span class="fw-semibold me-auto"><i class="bi bi-bar-chart me-2 text-primary" aria-hidden="true"></i>Leave days per month</span>
+                    <span class="small text-body-secondary" id="my-chart-range"></span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-box" style="height: 240px"><canvas id="my-chart-month" role="img" aria-label="My leave days per month by type"></canvas></div>
+                    <p class="text-body-secondary text-center my-5 d-none" id="my-chart-month-empty">No leave in this range</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
             <div class="card">
                 <div class="card-header bg-transparent d-flex flex-wrap align-items-center gap-2">
                     <span class="fw-semibold me-auto"><i class="bi bi-list-ul me-2 text-primary" aria-hidden="true"></i>My leaves</span>
@@ -148,21 +168,28 @@ function renderBalance() {
     }
     box.innerHTML = types.map((type) => {
         const u = used[type] || 0;
+        const base = state.config.eventLimits[type] || 0;
         const limit = leave.userLimit(state.config, type, state.user);
         const remain = limit - u;
         const stateCls = leave.usageState(u, limit);
         const percent = limit > 0 ? Math.min((u / limit) * 100, 100) : 0;
-        const main = remain < 0 ?
-            '<span class="balance-value">' + esc(fmt(-remain)) + '</span> over limit' :
-            '<span class="balance-value">' + esc(fmt(remain)) + '</span> remaining';
+        // Over the limit: "Over by N" instead of a negative number
+        const second = remain < 0 ?
+            '<div class="balance-stat balance-over"><span class="balance-value">' + esc(fmt(-remain)) + '</span><span class="balance-label">Over by</span></div>' :
+            '<div class="balance-stat"><span class="balance-value">' + esc(fmt(remain)) + '</span><span class="balance-label">Available</span></div>';
+        const extra = limit - base;
+        const limitText = 'Limit ' + fmt(limit) + (extra > 0 ? ' (incl. ' + fmt(extra) + ' extra)' : '');
         return `<div class="col"><div class="card balance-card h-100 is-${stateCls}" data-type="${esc(type)}">
             <div class="card-body">
-                <div class="d-flex align-items-center gap-2 mb-1">${typeBadge(type)}<span class="small text-body-secondary text-truncate">${esc(TYPE_NAMES[type] || '')}</span></div>
-                <div class="balance-main">${main}</div>
-                <div class="progress mb-2" role="progressbar" aria-label="${esc(type)} used" aria-valuenow="${esc(fmt(u))}" aria-valuemin="0" aria-valuemax="${esc(fmt(limit))}">
+                <div class="d-flex align-items-center gap-2 mb-2">${typeBadge(type)}<span class="small text-body-secondary text-truncate">${esc(TYPE_NAMES[type] || '')}</span></div>
+                <div class="balance-stats">
+                    <div class="balance-stat balance-taken"><span class="balance-value">${esc(fmt(u))}</span><span class="balance-label">Taken</span></div>
+                    ${second}
+                </div>
+                <div class="progress mb-2" role="progressbar" aria-label="${esc(type)} taken" aria-valuenow="${esc(fmt(u))}" aria-valuemin="0" aria-valuemax="${esc(fmt(limit))}">
                     <div class="progress-bar" style="width: ${percent}%"></div>
                 </div>
-                <div class="small text-body-secondary balance-meta">${esc(fmt(u))} used of ${esc(fmt(limit))}</div>
+                <div class="small text-body-secondary balance-meta">${esc(limitText)}</div>
             </div></div></div>`;
     }).join('');
 }
@@ -207,6 +234,13 @@ async function loadList() {
 function renderList() {
     const types = checkedValues(root, 'my-type');
     table.setRows(rows.filter((row) => types.indexOf(leave.baseType(row.type)) >= 0));
+    renderChart();
+}
+
+// Own leave days per month, for exactly the rows My leaves shows (range, types and search)
+function renderChart() {
+    $('#my-chart-range', root).textContent = range[0].format('D MMM YYYY') + ' – ' + range[1].format('D MMM YYYY') + ' · follows the My leaves filters';
+    drawBarChart($('#my-chart-month', root), $('#my-chart-month-empty', root), monthChartData(state.config, table.filtered()), false);
 }
 
 async function applyRange() {

@@ -64,14 +64,28 @@ The system SHALL show one view at a time and SHALL reflect the current view in t
 ### Requirement: Personal view layout
 The Personal view SHALL show, from top to bottom:
 1. The user's leave balance cards.
-2. An "Upcoming" list of the user's leave from today onwards (the next 5).
+2. Side by side on wide screens: an "Upcoming" list of the user's leave from today onwards (the next 5), and a "Leave days per month" chart.
 3. The "My leaves" list.
+
+The "Leave days per month" chart SHALL show the user's own leave days for each month (Jan to Dec), stacked by leave type, in the leave type colours. Half days count as 0.5. Each day counts in the month it falls in. The chart SHALL use exactly the rows that My leaves shows (date range, type filter and search). Each bar SHALL show its number of days, and a month with more than one type SHALL also show its total.
 
 The "My leaves" list SHALL have columns for leave type, start date, day of week, dates covered and total days. It SHALL be sortable by column, filterable by leave type and date range, searchable by text, and downloadable to Excel. The date range SHALL default to the current calendar year.
 
 #### Scenario: Page order
 - **WHEN** a signed-in user's Personal view finishes loading
-- **THEN** the balance cards are first, then Upcoming, then My leaves
+- **THEN** the balance cards are first, then Upcoming and the monthly chart, then My leaves
+
+#### Scenario: Monthly chart
+- **WHEN** the user has 3 PL days in March, a half-day SL in May and a 4-day SL from 28 to 31 December
+- **THEN** the chart shows 3 PL in March, 0.5 SL in May and 4 SL in December, and nothing in the other months
+
+#### Scenario: Chart follows the filters
+- **WHEN** the user deselects SL in the My leaves type filter
+- **THEN** the chart no longer shows SL days
+
+#### Scenario: No leave in range
+- **WHEN** the chosen range has none of the user's leave
+- **THEN** the chart area shows "No leave in this range"
 
 #### Scenario: Date range filter
 - **WHEN** the user picks a From and To date and applies them
@@ -86,7 +100,7 @@ The "My leaves" list SHALL have columns for leave type, start date, day of week,
 - **THEN** the Upcoming list shows "No upcoming leave"
 
 ### Requirement: Team view – who's out
-The Team view SHALL show who is out today and who is out on each remaining working day of the current week. Each entry SHALL show the person's name and leave type and SHALL mark half days. Today's panel SHALL also show the number of people present in the office today: the configured total employees minus everyone with a leave or WFH event today (a half day counts as half), as the current "Today Present" gauge does.
+The Team view SHALL show who is out today and who is out on each remaining working day of the current week, as two tabs ("Today", shown first, and "Later this week") of one Who's out card next to the month-wise chart. Each entry SHALL show the person's name and leave type and SHALL mark half days. Today's panel SHALL also show the number of people present in the office today: the configured total employees minus everyone with a leave or WFH event today (a half day counts as half), as the current "Today Present" gauge does.
 
 #### Scenario: Out today
 - **WHEN** Arun has SL today and Priya has a first-half PL today
@@ -131,7 +145,7 @@ The Team view SHALL show a summary table with one row per person and one column 
 - **THEN** the team list is filtered to Priya
 
 ### Requirement: Team view – charts
-The Team view SHALL show a month-wise chart (days per month, stacked by leave type) and a person-wise chart (days per person, stacked by leave type), both built from the team list's current filters.
+The Team view SHALL show a month-wise chart (days per month, stacked by leave type) and a person-wise chart (days per person, stacked by leave type), both built from the team list's current filters. Like the Personal chart, the bars SHALL show their numbers of days and stacks their totals.
 
 #### Scenario: Charts follow filters
 - **WHEN** an admin filters the team list to SL
