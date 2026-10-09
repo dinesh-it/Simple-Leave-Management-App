@@ -138,7 +138,7 @@ The Team view SHALL show a list of everyone's leave with columns for leave type,
 - **THEN** the team list starts with HBD and LOP deselected in the type filter
 
 ### Requirement: Team view – per-person summary
-The Team view SHALL show a summary table with one row per person and one column per leave type, giving the days taken in the Team view's current filters. For leave types with a limit, each cell SHALL show the remaining days on hover or focus. Cells above 80% of the person's limit (including their extra allowance) SHALL be marked as a warning, and cells at or over 100% as danger. Selecting a person's row SHALL apply that person to the team list filter. A search box SHALL filter the summary rows by person name.
+The Team view SHALL show a summary table with one row per person and one column per leave type, giving the days taken in the Team view's current filters. Comp-off (CO) SHALL NOT be shown in the summary. For leave types with a limit, each cell SHALL show the remaining days on hover or focus. Cells above 80% of the person's limit (including their extra allowance) SHALL be marked as a warning, and cells at or over 100% as danger. Selecting a person's row SHALL put that person's name in the summary's Search person box and select that person in the team list's person filter, so the team list, the charts and the summary show only that person. Clearing or changing the Search person box SHALL reset the person filter to everyone, and choosing a person in the person filter SHALL put the name in the Search person box. A search box SHALL filter the summary rows by person name. The summary SHALL be downloadable to Excel, with the days per type and the days left for limited types, for the rows it shows.
 
 #### Scenario: Warning colour
 - **WHEN** a person has used 15 of 18 PL
@@ -154,7 +154,15 @@ The Team view SHALL show a summary table with one row per person and one column 
 
 #### Scenario: Select a person
 - **WHEN** an admin selects Priya's row in the summary
-- **THEN** the team list is filtered to Priya
+- **THEN** "Priya" is put in the summary's Search person box and the person filter, and the team list and the summary show only Priya
+
+#### Scenario: Clear the selected person
+- **WHEN** the admin clears the Search person box after selecting Priya
+- **THEN** the person filter goes back to everyone and the team list and summary show everyone again
+
+#### Scenario: Download the summary
+- **WHEN** an admin downloads the per person summary
+- **THEN** an Excel file with one row per person shown, the days per type and the days left for limited types is downloaded
 
 ### Requirement: Team view – charts
 The Team view SHALL show a month-wise chart (days per month, stacked by leave type) and a person-wise chart (days per person, stacked by leave type), both built from the team list's current filters. Like the Personal chart, the bars SHALL show their numbers of days and stacks their totals.

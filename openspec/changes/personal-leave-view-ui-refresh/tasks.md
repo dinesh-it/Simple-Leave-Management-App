@@ -73,6 +73,10 @@
 
 - [x] 5.8 Add a person search box to the per-person summary, and give its rows the same height as the Team leaves rows (the "N left" note on the same line). Verify with the browser check: "mee" shows only Meena, clearing it shows everyone, and the first rows of both tables are equally high.
 
+- [x] 5.9 Leave comp-off (CO) out of the per-person summary (no column, no row for CO only), and narrow the gap between the side-by-side Team cards to 8px. Verify with the browser check: a CO event is listed in Team leaves but not in the summary, and the gaps measure 8px.
+
+- [x] 5.10 Add a Download (Excel) to the per-person summary (days per type, days left for limited types, the rows shown), and make clicking a person put the name in the summary's Search person box and the Team leaves Person filter (kept in step both ways, clearing shows everyone). Verify with the browser check: the downloaded file has the header and values, clicking Priya fills both and lists only Priya, clearing Search person shows everyone, choosing in the Person filter fills Search person.
+
 ## 6. Add Leave (`add-leave.js`)
 
 - [x] 6.1 Build the dialog with leave type, the quick date choices (Today/Tomorrow/Yesterday/Other, moving to the next working day on holidays or weekends), full/first half/second half, from/to/days kept in sync with native date inputs, location and description. Verify each control, including a Saturday "Today".

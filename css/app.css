@@ -354,6 +354,26 @@ tr.hl-muted > * { --bs-table-bg-state: var(--bs-tertiary-bg); color: var(--bs-se
 	font-size: .7rem;
 	color: var(--bs-secondary-color);
 }
+/* Compact per person summary: fits Person + PL, SL, OPH, WFH in its one third column */
+.summary-table {
+	font-size: .85rem;
+}
+.summary-table > :not(caption) > * > * {
+	padding-left: .25rem;
+	padding-right: .25rem;
+}
+.summary-table .summary-name {
+	font-size: .8rem;
+	font-weight: 600;
+	max-width: 6.5rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.summary-table .summary-note {
+	font-size: .65rem;
+	margin-left: .2rem;
+}
 /* Same row height in the Team leaves list and the per person summary */
 .leave-table > tbody > tr > *,
 .summary-table > tbody > tr > * {

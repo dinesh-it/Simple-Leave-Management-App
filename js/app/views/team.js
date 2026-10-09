@@ -40,7 +40,11 @@ export async function init(views, params) {
         empty: () => 'No leave matches the filters'
     });
 
-    $('#team-person', section).addEventListener('change', update);
+    // The Team leaves Person filter and the summary's Search person box follow each other
+    $('#team-person', section).addEventListener('change', (e) => {
+        $('#summary-search', section).value = e.target.value;
+        update();
+    });
     $('#team-types', section).addEventListener('change', update);
     $('#team-search', section).addEventListener('input', (e) => {
         table.setSearch(e.target.value);
@@ -52,7 +56,17 @@ export async function init(views, params) {
     });
     $('#team-download', section).addEventListener('click', download);
     $('#team-summary', section).addEventListener('click', selectPerson);
-    $('#summary-search', section).addEventListener('input', () => renderSummary(table.filtered()));
+    $('#summary-search', section).addEventListener('input', (e) => {
+        const person = $('#team-person', section);
+        // Typing something else than the selected person (or clearing it) shows everyone again
+        if (person.value && e.target.value.trim().toLowerCase() != person.value.toLowerCase()) {
+            person.value = '';
+            update();
+        } else {
+            renderSummary(table.filtered());
+        }
+    });
+    $('#summary-download', section).addEventListener('click', downloadSummary);
     $('#team-summary', section).addEventListener('keydown', (e) => {
         if (e.key == 'Enter' || e.key == ' ') {
             e.preventDefault();
@@ -61,6 +75,7 @@ export async function init(views, params) {
     });
     $('#team-clear-person', section).addEventListener('click', () => {
         $('#team-person', section).value = '';
+        $('#summary-search', section).value = '';
         update();
     });
     $('#monthly-download').addEventListener('click', downloadMonthly);
@@ -99,7 +114,7 @@ function template() {
         <span class="text-body-secondary small"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>Everyone's leave, visible to admins only</span>
     </div>
 
-    <div class="row g-4 mb-4">
+    <div class="row gx-2 gy-4 mb-4">
         <div class="col-lg-6">
             <div class="card h-100">
                 <div class="card-header bg-transparent d-flex flex-wrap align-items-baseline gap-2">
@@ -143,7 +158,7 @@ function template() {
             <p class="text-body-secondary text-center my-5 d-none" id="chart-person-empty">No data</p></div>
     </div>
 
-    <div class="row g-4">
+    <div class="row gx-2 gy-4">
     <div class="col-xl-8">
     <div class="card h-100">
         <div class="card-header bg-transparent d-flex flex-wrap align-items-center gap-2">
@@ -184,8 +199,12 @@ function template() {
 
     <div class="col-xl-4">
     <div class="card h-100">
-        <div class="card-header bg-transparent fw-semibold"><i class="bi bi-table me-2 text-primary" aria-hidden="true"></i>Per person <span class="fw-normal small text-body-secondary">(days, current filters)</span></div>
-        <div class="card-body">
+        <div class="card-header bg-transparent d-flex align-items-center gap-2">
+            <span class="fw-semibold me-auto text-nowrap"><i class="bi bi-table me-2 text-primary" aria-hidden="true"></i>Per person</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary text-nowrap" id="summary-download"><i class="bi bi-download me-1" aria-hidden="true"></i>Download</button>
+        </div>
+        <div class="card-body px-2">
+            <p class="small text-body-secondary mb-2 px-1">Days per type for the Team leaves filters. Click a person to show only their leave.</p>
             <input type="search" class="form-control form-control-sm mb-3" id="summary-search" placeholder="Search person" aria-label="Search the per person summary">
             <div class="table-responsive" id="team-summary"></div>
         </div>
@@ -323,13 +342,20 @@ function renderDerived() {
     renderCharts(filtered);
 }
 
-function renderSummary(filtered) {
+// Types left out of the per person summary (comp-off is not counted there)
+const SUMMARY_SKIP = ['CO'];
+// What the summary shows right now: {types, names, summary}, used by its download
+let shownSummary = { types: [], names: [], summary: {} };
+
+function renderSummary(all) {
+    const filtered = all.filter((r) => SUMMARY_SKIP.indexOf(leave.baseType(r.type)) < 0);
     const summary = leave.personSummary(filtered);
     const search = $('#summary-search', section).value.trim().toLowerCase();
     const names = Object.keys(summary).sort((a, b) => a.localeCompare(b));
     const shown = names.filter((n) => n.toLowerCase().indexOf(search) >= 0);
     const types = typeOrder(state.config, Array.from(new Set(filtered.map((r) => leave.baseType(r.type)))));
     const box = $('#team-summary', section);
+    shownSummary = { types, names: shown, summary };
     if (!names.length) {
         box.innerHTML = '<p class="text-body-secondary text-center my-4">No leave matches the filters</p>';
         return;
@@ -356,20 +382,55 @@ function renderSummary(filtered) {
             return '<td class="text-end text-nowrap cell-' + usage + '" title="' + esc(title) + '">' + esc(fmt(v)) +
                 '<span class="summary-note">· ' + esc(note) + '</span></td>';
         }).join('');
-        return '<tr data-person="' + esc(name) + '" tabindex="0" role="button" aria-label="Show ' + esc(name) + "'s leave\">" +
-            '<th scope="row">' + esc(name) + '</th>' + cells + '</tr>';
+        return '<tr data-person="' + esc(name) + '" tabindex="0" role="button" aria-label="Show only ' + esc(name) + '">' +
+            '<th scope="row" class="summary-name" title="' + esc(name) + '">' + esc(name) + '</th>' + cells + '</tr>';
     }).join('');
     box.innerHTML = '<table class="table table-sm table-hover align-middle mb-0 summary-table"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
 }
 
+// Clicking a person puts the name in the summary's Search person box and filters Team leaves to them
 function selectPerson(e) {
     const tr = e.target.closest('tr[data-person]');
     if (!tr) {
         return;
     }
-    $('#team-person', section).value = tr.dataset.person;
+    const name = tr.dataset.person;
+    const input = $('#summary-search', section);
+    input.value = name;
+    $('#team-person', section).value = name;
     update();
-    $('#team-table', section).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    input.focus();
+    input.select();
+}
+
+// Per person summary as shown (after its search): days per type, and days left for limited types
+function downloadSummary() {
+    const { types, names, summary } = shownSummary;
+    if (!names.length) {
+        showAlert('Per person', 'There is nothing to download for the current filters.');
+        return;
+    }
+    const limits = state.config.eventLimits || {};
+    const label = (t) => (t == '-' ? 'Other' : t);
+    const header = ['Person'];
+    types.forEach((t) => {
+        header.push(label(t));
+        if (limits[t]) {
+            header.push(label(t) + ' left');
+        }
+    });
+    const rows = names.map((name) => {
+        const line = [name];
+        types.forEach((t) => {
+            const v = summary[name][t] || 0;
+            line.push(v);
+            if (limits[t]) {
+                line.push(leave.userLimit(state.config, t, name) - v);
+            }
+        });
+        return line;
+    });
+    downloadSheet('per-person-leave', 'Per person', [header].concat(rows));
 }
 
 function renderCharts(filtered) {
